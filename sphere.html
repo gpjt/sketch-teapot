@@ -23,23 +23,23 @@
 
     gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
     if (length(lightWeighting) < 1.00) {
-        if (mod(gl_FragCoord.x + gl_FragCoord.y, 4.0) == 0) {
+        if (mod(gl_FragCoord.x + gl_FragCoord.y, 10.0) == 0) {
             gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
         }
     }
     if (length(lightWeighting) < 0.75) {
-        if (mod(gl_FragCoord.x - gl_FragCoord.y, 4.0) == 0) {
+        if (mod(gl_FragCoord.x - gl_FragCoord.y, 10.0) == 0) {
             gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
         }
     }
     if (length(lightWeighting) < 0.50) {
-        if (mod(gl_FragCoord.x + gl_FragCoord.y - 3, 4.0) == 0) {
+        if (mod(gl_FragCoord.x + gl_FragCoord.y - 5, 10.0) == 0) {
             gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
         }
     }
 
     if (length(lightWeighting) < 0.3465) {
-        if (mod(gl_FragCoord.x - gl_FragCoord.y - 3, 4.0) == 0) {
+        if (mod(gl_FragCoord.x - gl_FragCoord.y - 5, 10.0) == 0) {
             gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
         }
     }
