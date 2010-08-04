@@ -14,9 +14,6 @@
 
   uniform float uMaterialShininess;
 
-  uniform bool uShowSpecularHighlights;
-  uniform bool uUseLighting;
-
   uniform vec3 uAmbientColor;
 
   uniform vec3 uPointLightingLocation;
@@ -28,25 +25,19 @@
 
   void main(void) {
     vec3 lightWeighting;
-    if (!uUseLighting) {
-      lightWeighting = vec3(1.0, 1.0, 1.0);
-    } else {
-      vec3 lightDirection = normalize(uPointLightingLocation - vPosition.xyz);
-      vec3 normal = normalize(vTransformedNormal.xyz);
+    vec3 lightDirection = normalize(uPointLightingLocation - vPosition.xyz);
+    vec3 normal = normalize(vTransformedNormal.xyz);
 
-      float specularLightWeighting = 0.0;
-      if (uShowSpecularHighlights) {
-        vec3 eyeDirection = normalize(-vPosition.xyz);
-        vec3 reflectionDirection = reflect(-lightDirection, normal);
+    float specularLightWeighting = 0.0;
+    vec3 eyeDirection = normalize(-vPosition.xyz);
+    vec3 reflectionDirection = reflect(-lightDirection, normal);
 
-        specularLightWeighting = pow(max(dot(reflectionDirection, eyeDirection), 0.0), uMaterialShininess);
-      }
+    specularLightWeighting = pow(max(dot(reflectionDirection, eyeDirection), 0.0), uMaterialShininess);
 
-      float diffuseLightWeighting = max(dot(normal, lightDirection), 0.0);
-      lightWeighting = uAmbientColor
-        + uPointLightingSpecularColor * specularLightWeighting
-        + uPointLightingDiffuseColor * diffuseLightWeighting;
-    }
+    float diffuseLightWeighting = max(dot(normal, lightDirection), 0.0);
+    lightWeighting = uAmbientColor
+      + uPointLightingSpecularColor * specularLightWeighting
+      + uPointLightingDiffuseColor * diffuseLightWeighting;
 
     gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
     if (length(lightWeighting) < 1.00) {
@@ -173,8 +164,6 @@
     shaderProgram.nMatrixUniform = gl.getUniformLocation(shaderProgram, "uNMatrix");
     shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
     shaderProgram.materialShininessUniform = gl.getUniformLocation(shaderProgram, "uMaterialShininess");
-    shaderProgram.showSpecularHighlightsUniform = gl.getUniformLocation(shaderProgram, "uShowSpecularHighlights");
-    shaderProgram.useLightingUniform = gl.getUniformLocation(shaderProgram, "uUseLighting");
     shaderProgram.ambientColorUniform = gl.getUniformLocation(shaderProgram, "uAmbientColor");
     shaderProgram.pointLightingLocationUniform = gl.getUniformLocation(shaderProgram, "uPointLightingLocation");
     shaderProgram.pointLightingSpecularColorUniform = gl.getUniformLocation(shaderProgram, "uPointLightingSpecularColor");
@@ -295,28 +284,21 @@
 
     perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0);
 
-    var specularHighlights = document.getElementById("specular").checked;
-    gl.uniform1i(shaderProgram.showSpecularHighlightsUniform, specularHighlights);
+    var ambientIntensity = parseFloat(document.getElementById("ambientI").value);
+    gl.uniform3f(shaderProgram.ambientColorUniform, ambientIntensity, ambientIntensity, ambientIntensity);
 
-    var lighting = document.getElementById("lighting").checked;
-    gl.uniform1i(shaderProgram.useLightingUniform, lighting);
-    if (lighting) {
-      var ambientIntensity = parseFloat(document.getElementById("ambientI").value);
-      gl.uniform3f(shaderProgram.ambientColorUniform, ambientIntensity, ambientIntensity, ambientIntensity);
+    gl.uniform3f(
+      shaderProgram.pointLightingLocationUniform,
+      parseFloat(document.getElementById("lightPositionX").value),
+      parseFloat(document.getElementById("lightPositionY").value),
+      parseFloat(document.getElementById("lightPositionZ").value)
+    );
 
-      gl.uniform3f(
-        shaderProgram.pointLightingLocationUniform,
-        parseFloat(document.getElementById("lightPositionX").value),
-        parseFloat(document.getElementById("lightPositionY").value),
-        parseFloat(document.getElementById("lightPositionZ").value)
-      );
+    var specularIntensity = parseFloat(document.getElementById("specularI").value);
+    gl.uniform3f(shaderProgram.pointLightingSpecularColorUniform, specularIntensity, specularIntensity, specularIntensity);
 
-      var specularIntensity = parseFloat(document.getElementById("specularI").value);
-      gl.uniform3f(shaderProgram.pointLightingSpecularColorUniform, specularIntensity, specularIntensity, specularIntensity);
-
-      var diffuseIntensity = parseFloat(document.getElementById("diffuseI").value);
-      gl.uniform3f(shaderProgram.pointLightingDiffuseColorUniform, diffuseIntensity, diffuseIntensity, diffuseIntensity);
-    }
+    var diffuseIntensity = parseFloat(document.getElementById("diffuseI").value);
+    gl.uniform3f(shaderProgram.pointLightingDiffuseColorUniform, diffuseIntensity, diffuseIntensity, diffuseIntensity);
 
     loadIdentity();
 
@@ -399,8 +381,6 @@
 
 
   <br/>
-<input type="checkbox" id="specular" checked /> Show specular highlight<br/>
-<input type="checkbox" id="lighting" checked /> Use lighting<br/>
 
 <br/>
 <h2>Material:</h2>
