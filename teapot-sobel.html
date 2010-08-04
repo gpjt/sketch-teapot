@@ -9,53 +9,53 @@
 
 
 <script id="normals-fs" type="x-shader/x-fragment">
-  varying vec4 vTransformedNormal;
+    varying vec4 vTransformedNormal;
 
-  void main(void) {
-    gl_FragColor = vec4(normalize(vTransformedNormal.xyz), 1.0);
-  }
+    void main(void) {
+        gl_FragColor = vec4(normalize(vTransformedNormal.xyz), 1.0);
+    }
 </script>
 
 
 <script id="matrix-vs" type="x-shader/x-vertex">
-  attribute vec3 aVertexPosition;
-  attribute vec3 aVertexNormal;
+    attribute vec3 aVertexPosition;
+    attribute vec3 aVertexNormal;
 
-  uniform mat4 uMVMatrix;
-  uniform mat4 uPMatrix;
-  uniform mat4 uNMatrix;
+    uniform mat4 uMVMatrix;
+    uniform mat4 uPMatrix;
+    uniform mat4 uNMatrix;
 
-  varying vec4 vTransformedNormal;
+    varying vec4 vTransformedNormal;
 
 
-  void main(void) {
-    gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
-    vTransformedNormal = uNMatrix * vec4(aVertexNormal, 1.0);
-  }
+    void main(void) {
+        gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+        vTransformedNormal = uNMatrix * vec4(aVertexNormal, 1.0);
+    }
 </script>
 
 <script id="direct-texture-fs" type="x-shader/x-fragment">
-  varying vec2 vTextureCoord;
-  uniform sampler2D uSampler;
+    varying vec2 vTextureCoord;
+    uniform sampler2D uSampler;
 
 
-  void main(void) {
-    gl_FragColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
-  }
+    void main(void) {
+        gl_FragColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
+    }
 </script>
 
 
 <script id="flat-vs" type="x-shader/x-vertex">
-  attribute vec3 aVertexPosition;
-  attribute vec2 aTextureCoord;
+attribute vec3 aVertexPosition;
+attribute vec2 aTextureCoord;
 
-  varying vec2 vTextureCoord;
+varying vec2 vTextureCoord;
 
 
-  void main(void) {
+void main(void) {
     gl_Position = vec4(aVertexPosition, 1.0);
     vTextureCoord = aTextureCoord;
-  }
+}
 </script>
 
 
