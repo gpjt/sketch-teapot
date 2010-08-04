@@ -398,7 +398,7 @@ void main(void) {
 
         // ------------ RENDER TEXTURE TO TEXTURE USING SOBEL OPERATOR --------------
 
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, sobelFramebuffer);
         gl.useProgram(sobelProgram);
         gl.viewport(0, 0, sobelFramebuffer.width, sobelFramebuffer.height);
         gl.activeTexture(gl.TEXTURE0);
@@ -418,21 +418,21 @@ void main(void) {
 
         // ------------ RENDER FINAL TEXTURE TO CANVAS --------------
 
-        //gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        //gl.useProgram(directTextureProgram);
-        //gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
-        //gl.activeTexture(gl.TEXTURE0);
-        //gl.bindTexture(gl.TEXTURE_2D, normalsFramebuffer.texture);
-        //gl.uniform1i(directTextureProgram.samplerUniform, 0);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.useProgram(directTextureProgram);
+        gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, normalsFramebuffer.texture);
+        gl.uniform1i(directTextureProgram.samplerUniform, 0);
 
-        //gl.bindBuffer(gl.ARRAY_BUFFER, directTextureVertexPositionBuffer);
-        //gl.vertexAttribPointer(directTextureProgram.vertexPositionAttribute, directTextureVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+        gl.bindBuffer(gl.ARRAY_BUFFER, directTextureVertexPositionBuffer);
+        gl.vertexAttribPointer(directTextureProgram.vertexPositionAttribute, directTextureVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
-        //gl.bindBuffer(gl.ARRAY_BUFFER, directTextureVertexTextureCoordBuffer);
-        //gl.vertexAttribPointer(directTextureProgram.textureCoordAttribute, directTextureVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
+        gl.bindBuffer(gl.ARRAY_BUFFER, directTextureVertexTextureCoordBuffer);
+        gl.vertexAttribPointer(directTextureProgram.textureCoordAttribute, directTextureVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
-        //setMatrixUniforms(directTextureProgram);
-        //gl.drawArrays(gl.TRIANGLE_STRIP, 0, directTextureVertexPositionBuffer.numItems);
+        setMatrixUniforms(directTextureProgram);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, directTextureVertexPositionBuffer.numItems);
     }
 
 
