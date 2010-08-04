@@ -271,71 +271,71 @@ void main(void) {
     }
 
 
-  var directTextureVertexPositionBuffer;
-  var directTextureVertexTextureCoordBuffer;
-  var directTextureNormalsBuffer;
-  function initBuffers() {
-    directTextureVertexPositionBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, directTextureVertexPositionBuffer);
-    var vertices = [
-         1.0,  1.0,
-        -1.0,  1.0,
-         1.0, -1.0,
-        -1.0, -1.0,
-    ];
-    gl.bufferData(gl.ARRAY_BUFFER, new WebGLFloatArray(vertices), gl.STATIC_DRAW);
-    directTextureVertexPositionBuffer.itemSize = 2;
-    directTextureVertexPositionBuffer.numItems = 4;
+    var directTextureVertexPositionBuffer;
+    var directTextureVertexTextureCoordBuffer;
+    var directTextureNormalsBuffer;
+    function initBuffers() {
+        directTextureVertexPositionBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, directTextureVertexPositionBuffer);
+        var vertices = [
+             1.0,  1.0,
+            -1.0,  1.0,
+             1.0, -1.0,
+            -1.0, -1.0,
+        ];
+        gl.bufferData(gl.ARRAY_BUFFER, new WebGLFloatArray(vertices), gl.STATIC_DRAW);
+        directTextureVertexPositionBuffer.itemSize = 2;
+        directTextureVertexPositionBuffer.numItems = 4;
 
-    directTextureVertexTextureCoordBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, directTextureVertexTextureCoordBuffer);
-    var textureCoords = [
-         1.0,  1.0,
-         0.0,  1.0,
-         1.0,  0.0,
-         0.0,  0.0,
-    ];
-    gl.bufferData(gl.ARRAY_BUFFER, new WebGLFloatArray(textureCoords), gl.STATIC_DRAW);
-    directTextureVertexTextureCoordBuffer.itemSize = 2;
-    directTextureVertexTextureCoordBuffer.numItems = 4;
-  }
-
-
-
-  function createRTTFrameBuffer() {
-    framebuffer = gl.createFramebuffer();
-    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-    framebuffer.width = 512;
-    framebuffer.height = 512;
-
-    framebuffer.texture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, framebuffer.texture);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
-    gl.generateMipmap(gl.TEXTURE_2D);
-
-    try {
-      // Do it the way the spec requires
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, framebuffer.width, framebuffer.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-    } catch (exception) {
-      // Workaround for what appears to be a Minefield bug.
-      var textureStorage = new WebGLUnsignedByteArray(framebuffer.width * framebuffer.height * 4);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, framebuffer.width, framebuffer.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, textureStorage);
+        directTextureVertexTextureCoordBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, directTextureVertexTextureCoordBuffer);
+        var textureCoords = [
+            1.0,  1.0,
+            0.0,  1.0,
+            1.0,  0.0,
+            0.0,  0.0,
+        ];
+        gl.bufferData(gl.ARRAY_BUFFER, new WebGLFloatArray(textureCoords), gl.STATIC_DRAW);
+        directTextureVertexTextureCoordBuffer.itemSize = 2;
+        directTextureVertexTextureCoordBuffer.numItems = 4;
     }
 
-    var renderbuffer = gl.createRenderbuffer();
-    gl.bindRenderbuffer(gl.RENDERBUFFER, renderbuffer);
-    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, framebuffer.width, framebuffer.height);
 
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, framebuffer.texture, 0);
-    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, renderbuffer);
 
-    gl.bindTexture(gl.TEXTURE_2D, null);
-    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    function createRTTFrameBuffer() {
+        framebuffer = gl.createFramebuffer();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+        framebuffer.width = 512;
+        framebuffer.height = 512;
 
-    return framebuffer;
-  }
+        framebuffer.texture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, framebuffer.texture);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+        gl.generateMipmap(gl.TEXTURE_2D);
+
+        try {
+            // Do it the way the spec requires
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, framebuffer.width, framebuffer.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+        } catch (exception) {
+            // Workaround for what appears to be a Minefield bug.
+            var textureStorage = new WebGLUnsignedByteArray(framebuffer.width * framebuffer.height * 4);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, framebuffer.width, framebuffer.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, textureStorage);
+        }
+
+        var renderbuffer = gl.createRenderbuffer();
+        gl.bindRenderbuffer(gl.RENDERBUFFER, renderbuffer);
+        gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, framebuffer.width, framebuffer.height);
+
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, framebuffer.texture, 0);
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, renderbuffer);
+
+        gl.bindTexture(gl.TEXTURE_2D, null);
+        gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+        return framebuffer;
+    }
 
 
 
@@ -347,52 +347,52 @@ void main(void) {
 
 
 
-  var teapotAngle = 180;
+    var teapotAngle = 180;
 
-  function drawScene() {
-    gl.bindFramebuffer(gl.FRAMEBUFFER, normalsFramebuffer);
-    gl.useProgram(normalsProgram);
-    gl.viewport(0, 0, normalsFramebuffer.width, normalsFramebuffer.height);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    function drawScene() {
+        gl.bindFramebuffer(gl.FRAMEBUFFER, normalsFramebuffer);
+        gl.useProgram(normalsProgram);
+        gl.viewport(0, 0, normalsFramebuffer.width, normalsFramebuffer.height);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    if (teapotVertexPositionBuffer == null || teapotVertexNormalBuffer == null || teapotVertexTextureCoordBuffer == null || teapotVertexIndexBuffer == null) {
-      return;
+        if (teapotVertexPositionBuffer == null || teapotVertexNormalBuffer == null || teapotVertexTextureCoordBuffer == null || teapotVertexIndexBuffer == null) {
+            return;
+        }
+
+        perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0);
+
+        loadIdentity();
+
+        mvTranslate([0, 0, -40]);
+        mvRotate(23.4, [1, 0, -1]);
+        mvRotate(teapotAngle, [0, 1, 0]);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, teapotVertexPositionBuffer);
+        gl.vertexAttribPointer(normalsProgram.vertexPositionAttribute, teapotVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, teapotVertexNormalBuffer);
+        gl.vertexAttribPointer(normalsProgram.vertexNormalAttribute, teapotVertexNormalBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, teapotVertexIndexBuffer);
+        setMatrixUniforms(normalsProgram);
+        gl.drawElements(gl.TRIANGLES, teapotVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.useProgram(directTextureProgram);
+        gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, normalsFramebuffer.texture);
+        gl.uniform1i(directTextureProgram.samplerUniform, 0);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, directTextureVertexPositionBuffer);
+        gl.vertexAttribPointer(directTextureProgram.vertexPositionAttribute, directTextureVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, directTextureVertexTextureCoordBuffer);
+        gl.vertexAttribPointer(directTextureProgram.textureCoordAttribute, directTextureVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+        setMatrixUniforms(directTextureProgram);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, directTextureVertexPositionBuffer.numItems);
     }
-
-    perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0);
-
-    loadIdentity();
-
-    mvTranslate([0, 0, -40]);
-    mvRotate(23.4, [1, 0, -1]);
-    mvRotate(teapotAngle, [0, 1, 0]);
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, teapotVertexPositionBuffer);
-    gl.vertexAttribPointer(normalsProgram.vertexPositionAttribute, teapotVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, teapotVertexNormalBuffer);
-    gl.vertexAttribPointer(normalsProgram.vertexNormalAttribute, teapotVertexNormalBuffer.itemSize, gl.FLOAT, false, 0, 0);
-
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, teapotVertexIndexBuffer);
-    setMatrixUniforms(normalsProgram);
-    gl.drawElements(gl.TRIANGLES, teapotVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
-
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    gl.useProgram(directTextureProgram);
-    gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, normalsFramebuffer.texture);
-    gl.uniform1i(directTextureProgram.samplerUniform, 0);
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, directTextureVertexPositionBuffer);
-    gl.vertexAttribPointer(directTextureProgram.vertexPositionAttribute, directTextureVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, directTextureVertexTextureCoordBuffer);
-    gl.vertexAttribPointer(directTextureProgram.textureCoordAttribute, directTextureVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
-
-    setMatrixUniforms(directTextureProgram);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, directTextureVertexPositionBuffer.numItems);
-  }
 
 
   var lastTime = 0;
