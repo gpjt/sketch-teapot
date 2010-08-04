@@ -10,19 +10,6 @@
 
 <script id="normals-fs" type="x-shader/x-fragment">
   varying vec4 vTransformedNormal;
-  varying vec4 vPosition;
-  varying vec2 vTextureCoord;
-
-  uniform float uMaterialShininess;
-
-  uniform vec3 uAmbientColor;
-
-  uniform vec3 uPointLightingLocation;
-  uniform vec3 uPointLightingSpecularColor;
-  uniform vec3 uPointLightingDiffuseColor;
-
-  uniform sampler2D uSampler;
-
 
   void main(void) {
     gl_FragColor = vec4(normalize(vTransformedNormal.xyz), 1.0);
@@ -33,22 +20,17 @@
 <script id="matrix-vs" type="x-shader/x-vertex">
   attribute vec3 aVertexPosition;
   attribute vec3 aVertexNormal;
-  attribute vec2 aTextureCoord;
 
   uniform mat4 uMVMatrix;
   uniform mat4 uPMatrix;
   uniform mat4 uNMatrix;
 
   varying vec4 vTransformedNormal;
-  varying vec4 vPosition;
-  varying vec2 vTextureCoord;
 
 
   void main(void) {
-    vPosition = uMVMatrix * vec4(aVertexPosition, 1.0);
-    gl_Position = uPMatrix * vPosition;
+    gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
     vTransformedNormal = uNMatrix * vec4(aVertexNormal, 1.0);
-    vTextureCoord = aTextureCoord;
   }
 </script>
 
@@ -316,18 +298,6 @@
     gl.bufferData(gl.ARRAY_BUFFER, new WebGLFloatArray(textureCoords), gl.STATIC_DRAW);
     directTextureVertexTextureCoordBuffer.itemSize = 2;
     directTextureVertexTextureCoordBuffer.numItems = 4;
-
-    directTextureNormalsBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, directTextureNormalsBuffer);
-    var normals = [
-         0.0, 0.0, 1.0,
-         0.0, 0.0, 1.0,
-         0.0, 0.0, 1.0,
-         0.0, 0.0, 1.0
-    ];
-    gl.bufferData(gl.ARRAY_BUFFER, new WebGLFloatArray(normals), gl.STATIC_DRAW);
-    directTextureNormalsBuffer.itemSize = 3;
-    directTextureNormalsBuffer.numItems = 4;
   }
 
 
@@ -397,16 +367,11 @@
     mvRotate(23.4, [1, 0, -1]);
     mvRotate(teapotAngle, [0, 1, 0]);
 
-    gl.uniform1f(normalsProgram.materialShininessUniform, parseFloat(document.getElementById("shininess").value));
-
     gl.bindBuffer(gl.ARRAY_BUFFER, teapotVertexPositionBuffer);
     gl.vertexAttribPointer(normalsProgram.vertexPositionAttribute, teapotVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, teapotVertexNormalBuffer);
     gl.vertexAttribPointer(normalsProgram.vertexNormalAttribute, teapotVertexNormalBuffer.itemSize, gl.FLOAT, false, 0, 0);
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, teapotVertexTextureCoordBuffer);
-    gl.vertexAttribPointer(normalsProgram.textureCoordAttribute, teapotVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, teapotVertexIndexBuffer);
     setMatrixUniforms(normalsProgram);
