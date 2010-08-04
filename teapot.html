@@ -301,12 +301,8 @@
     var lighting = document.getElementById("lighting").checked;
     gl.uniform1i(shaderProgram.useLightingUniform, lighting);
     if (lighting) {
-      gl.uniform3f(
-        shaderProgram.ambientColorUniform,
-        parseFloat(document.getElementById("ambientR").value),
-        parseFloat(document.getElementById("ambientG").value),
-        parseFloat(document.getElementById("ambientB").value)
-      );
+      var ambientIntensity = parseFloat(document.getElementById("ambientI").value);
+      gl.uniform3f(shaderProgram.ambientColorUniform, ambientIntensity, ambientIntensity, ambientIntensity);
 
       gl.uniform3f(
         shaderProgram.pointLightingLocationUniform,
@@ -315,19 +311,11 @@
         parseFloat(document.getElementById("lightPositionZ").value)
       );
 
-      gl.uniform3f(
-        shaderProgram.pointLightingSpecularColorUniform,
-        parseFloat(document.getElementById("specularR").value),
-        parseFloat(document.getElementById("specularG").value),
-        parseFloat(document.getElementById("specularB").value)
-      );
+      var specularIntensity = parseFloat(document.getElementById("specularI").value);
+      gl.uniform3f(shaderProgram.pointLightingSpecularColorUniform, specularIntensity, specularIntensity, specularIntensity);
 
-      gl.uniform3f(
-        shaderProgram.pointLightingDiffuseColorUniform,
-        parseFloat(document.getElementById("diffuseR").value),
-        parseFloat(document.getElementById("diffuseG").value),
-        parseFloat(document.getElementById("diffuseB").value)
-      );
+      var diffuseIntensity = parseFloat(document.getElementById("diffuseI").value);
+      gl.uniform3f(shaderProgram.pointLightingDiffuseColorUniform, diffuseIntensity, diffuseIntensity, diffuseIntensity);
     }
 
     loadIdentity();
@@ -434,26 +422,20 @@
 <td>Z: <input type="text" id="lightPositionZ" value="-20.0" />
 </tr>
 <tr>
-<td><b>Specular colour:</b>
-<td>R: <input type="text" id="specularR" value="0.8" />
-<td>G: <input type="text" id="specularG" value="0.8" />
-<td>B: <input type="text" id="specularB" value="0.8" />
+<td><b>Specular intensity:</b>
+<td>R: <input type="text" id="specularI" value="0.8" />
 </tr>
 <tr>
-<td><b>Diffuse colour:</b>
-<td>R: <input type="text" id="diffuseR" value="0.8" />
-<td>G: <input type="text" id="diffuseG" value="0.8" />
-<td>B: <input type="text" id="diffuseB" value="0.8" />
+<td><b>Diffuse intensity:</b>
+<td>R: <input type="text" id="diffuseI" value="0.8" />
 </tr>
 </table>
 
 <h2>Ambient light:</h2>
 <table style="border: 0; padding: 10px;">
 <tr>
-<td><b>Colour:</b>
-<td>R: <input type="text" id="ambientR" value="0.2" />
-<td>G: <input type="text" id="ambientG" value="0.2" />
-<td>B: <input type="text" id="ambientB" value="0.2" />
+<td><b>Intensity:</b>
+<td>R: <input type="text" id="ambientI" value="0.2" />
 </tr>
 </table>
 
