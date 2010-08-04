@@ -199,31 +199,31 @@ void main(void) {
     }
 
 
-  function createRotationMatrix(angle, v) {
-    var arad = angle * Math.PI / 180.0;
-    return Matrix.Rotation(arad, $V([v[0], v[1], v[2]])).ensure4x4();
-  }
+    function createRotationMatrix(angle, v) {
+        var arad = angle * Math.PI / 180.0;
+        return Matrix.Rotation(arad, $V([v[0], v[1], v[2]])).ensure4x4();
+    }
 
 
-  function mvRotate(angle, v) {
-    multMatrix(createRotationMatrix(angle, v));
-  }
+    function mvRotate(angle, v) {
+        multMatrix(createRotationMatrix(angle, v));
+    }
 
 
-  var pMatrix;
-  function perspective(fovy, aspect, znear, zfar) {
-    pMatrix = makePerspective(fovy, aspect, znear, zfar);
-  }
+    var pMatrix;
+        function perspective(fovy, aspect, znear, zfar) {
+        pMatrix = makePerspective(fovy, aspect, znear, zfar);
+    }
 
 
-  function setMatrixUniforms(program) {
-    gl.uniformMatrix4fv(program.pMatrixUniform, false, new WebGLFloatArray(pMatrix.flatten()));
-    gl.uniformMatrix4fv(program.mvMatrixUniform, false, new WebGLFloatArray(mvMatrix.flatten()));
+    function setMatrixUniforms(program) {
+        gl.uniformMatrix4fv(program.pMatrixUniform, false, new WebGLFloatArray(pMatrix.flatten()));
+        gl.uniformMatrix4fv(program.mvMatrixUniform, false, new WebGLFloatArray(mvMatrix.flatten()));
 
-    var normalMatrix = mvMatrix.inverse();
-    normalMatrix = normalMatrix.transpose();
-    gl.uniformMatrix4fv(program.nMatrixUniform, false, new WebGLFloatArray(normalMatrix.flatten()));
-  }
+        var normalMatrix = mvMatrix.inverse();
+        normalMatrix = normalMatrix.transpose();
+        gl.uniformMatrix4fv(program.nMatrixUniform, false, new WebGLFloatArray(normalMatrix.flatten()));
+    }
 
 
   var teapotVertexPositionBuffer;
