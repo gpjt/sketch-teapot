@@ -111,92 +111,92 @@ void main(void) {
     }
 
 
-  function createProgram(fsId, vsId) {
-    var normalsFragmentShader = getShader(gl, fsId);
-    var vertexShader = getShader(gl, vsId);
+    function createProgram(fsId, vsId) {
+        var normalsFragmentShader = getShader(gl, fsId);
+        var vertexShader = getShader(gl, vsId);
 
-    var program = gl.createProgram();
-    gl.attachShader(program, vertexShader);
-    gl.attachShader(program, normalsFragmentShader);
-    gl.linkProgram(program);
+        var program = gl.createProgram();
+        gl.attachShader(program, vertexShader);
+        gl.attachShader(program, normalsFragmentShader);
+        gl.linkProgram(program);
 
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-      alert("Could not initialise shaders " + vsId + ", " + fsId + gl.getProgramInfoLog(program));
+        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+            alert("Could not initialise shaders " + vsId + ", " + fsId + gl.getProgramInfoLog(program));
+        }
+
+        gl.useProgram(program);
+
+        program.vertexPositionAttribute = gl.getAttribLocation(program, "aVertexPosition");
+        if (program.vertexPositionAttribute != -1) {
+            gl.enableVertexAttribArray(program.vertexPositionAttribute);
+        }
+
+        program.vertexNormalAttribute = gl.getAttribLocation(program, "aVertexNormal");
+        if (program.vertexNormalAttribute != -1) {
+            gl.enableVertexAttribArray(program.vertexNormalAttribute);
+        }
+
+        program.textureCoordAttribute = gl.getAttribLocation(program, "aTextureCoord");
+        if (program.textureCoordAttribute != -1) {
+            gl.enableVertexAttribArray(program.textureCoordAttribute);
+        }
+
+        program.pMatrixUniform = gl.getUniformLocation(program, "uPMatrix");
+        program.mvMatrixUniform = gl.getUniformLocation(program, "uMVMatrix");
+        program.nMatrixUniform = gl.getUniformLocation(program, "uNMatrix");
+        program.samplerUniform = gl.getUniformLocation(program, "uSampler");
+        program.materialShininessUniform = gl.getUniformLocation(program, "uMaterialShininess");
+        program.ambientColorUniform = gl.getUniformLocation(program, "uAmbientColor");
+        program.pointLightingLocationUniform = gl.getUniformLocation(program, "uPointLightingLocation");
+        program.pointLightingSpecularColorUniform = gl.getUniformLocation(program, "uPointLightingSpecularColor");
+        program.pointLightingDiffuseColorUniform = gl.getUniformLocation(program, "uPointLightingDiffuseColor");
+
+        return program;
     }
 
-    gl.useProgram(program);
 
-    program.vertexPositionAttribute = gl.getAttribLocation(program, "aVertexPosition");
-    if (program.vertexPositionAttribute != -1) {
-        gl.enableVertexAttribArray(program.vertexPositionAttribute);
+    var normalsProgram;
+    var directTextureProgram;
+    function initShaders() {
+        normalsProgram = createProgram("normals-fs", "matrix-vs");
+        directTextureProgram = createProgram("direct-texture-fs", "flat-vs");
     }
 
-    program.vertexNormalAttribute = gl.getAttribLocation(program, "aVertexNormal");
-    if (program.vertexNormalAttribute != -1) {
-        gl.enableVertexAttribArray(program.vertexNormalAttribute);
+
+    var mvMatrix;
+    var mvMatrixStack = [];
+
+    function mvPushMatrix(m) {
+        if (m) {
+            mvMatrixStack.push(m.dup());
+            mvMatrix = m.dup();
+        } else {
+            mvMatrixStack.push(mvMatrix.dup());
+        }
     }
 
-    program.textureCoordAttribute = gl.getAttribLocation(program, "aTextureCoord");
-    if (program.textureCoordAttribute != -1) {
-        gl.enableVertexAttribArray(program.textureCoordAttribute);
+    function mvPopMatrix() {
+        if (mvMatrixStack.length == 0) {
+            throw "Invalid popMatrix!";
+        }
+        mvMatrix = mvMatrixStack.pop();
+        return mvMatrix;
     }
 
-    program.pMatrixUniform = gl.getUniformLocation(program, "uPMatrix");
-    program.mvMatrixUniform = gl.getUniformLocation(program, "uMVMatrix");
-    program.nMatrixUniform = gl.getUniformLocation(program, "uNMatrix");
-    program.samplerUniform = gl.getUniformLocation(program, "uSampler");
-    program.materialShininessUniform = gl.getUniformLocation(program, "uMaterialShininess");
-    program.ambientColorUniform = gl.getUniformLocation(program, "uAmbientColor");
-    program.pointLightingLocationUniform = gl.getUniformLocation(program, "uPointLightingLocation");
-    program.pointLightingSpecularColorUniform = gl.getUniformLocation(program, "uPointLightingSpecularColor");
-    program.pointLightingDiffuseColorUniform = gl.getUniformLocation(program, "uPointLightingDiffuseColor");
-
-    return program;
-  }
-
-
-  var normalsProgram;
-  var directTextureProgram;
-  function initShaders() {
-    normalsProgram = createProgram("normals-fs", "matrix-vs");
-    directTextureProgram = createProgram("direct-texture-fs", "flat-vs");
-  }
-
-
-  var mvMatrix;
-  var mvMatrixStack = [];
-
-  function mvPushMatrix(m) {
-    if (m) {
-      mvMatrixStack.push(m.dup());
-      mvMatrix = m.dup();
-    } else {
-      mvMatrixStack.push(mvMatrix.dup());
+    function loadIdentity() {
+        mvMatrix = Matrix.I(4);
     }
-  }
 
-  function mvPopMatrix() {
-    if (mvMatrixStack.length == 0) {
-      throw "Invalid popMatrix!";
+
+    function multMatrix(m) {
+        mvMatrix = mvMatrix.x(m);
     }
-    mvMatrix = mvMatrixStack.pop();
-    return mvMatrix;
-  }
-
-  function loadIdentity() {
-    mvMatrix = Matrix.I(4);
-  }
 
 
-  function multMatrix(m) {
-    mvMatrix = mvMatrix.x(m);
-  }
-
-
-  function mvTranslate(v) {
-    var m = Matrix.Translation($V([v[0], v[1], v[2]])).ensure4x4();
-    multMatrix(m);
-  }
+    function mvTranslate(v) {
+        var m = Matrix.Translation($V([v[0], v[1], v[2]])).ensure4x4();
+        multMatrix(m);
+    }
 
 
   function createRotationMatrix(angle, v) {
