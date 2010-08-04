@@ -343,40 +343,48 @@
   }
 
 
-  var normalsFramebuffer;
-  var normalsTexture;
-  function initNormalsFramebuffer() {
-    normalsFramebuffer = gl.createFramebuffer();
-    gl.bindFramebuffer(gl.FRAMEBUFFER, normalsFramebuffer);
-    normalsFramebuffer.width = 512;
-    normalsFramebuffer.height = 512;
 
-    normalsTexture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, normalsTexture);
+  function createRTTFrameBuffer() {
+    framebuffer = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+    framebuffer.width = 512;
+    framebuffer.height = 512;
+
+    framebuffer.texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, framebuffer.texture);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
     gl.generateMipmap(gl.TEXTURE_2D);
 
     try {
       // Do it the way the spec requires
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, normalsFramebuffer.width, normalsFramebuffer.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, framebuffer.width, framebuffer.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
     } catch (exception) {
       // Workaround for what appears to be a Minefield bug.
-      var textureStorage = new WebGLUnsignedByteArray(normalsFramebuffer.width * normalsFramebuffer.height * 4);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, normalsFramebuffer.width, normalsFramebuffer.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, textureStorage);
+      var textureStorage = new WebGLUnsignedByteArray(framebuffer.width * framebuffer.height * 4);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, framebuffer.width, framebuffer.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, textureStorage);
     }
 
     var renderbuffer = gl.createRenderbuffer();
     gl.bindRenderbuffer(gl.RENDERBUFFER, renderbuffer);
-    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, normalsFramebuffer.width, normalsFramebuffer.height);
+    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, framebuffer.width, framebuffer.height);
 
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, normalsTexture, 0);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, framebuffer.texture, 0);
     gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, renderbuffer);
 
     gl.bindTexture(gl.TEXTURE_2D, null);
     gl.bindRenderbuffer(gl.RENDERBUFFER, null);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+    return framebuffer;
   }
+
+
+
+    var normalsFramebuffer;
+    function initRTTFramebuffers() {
+        normalsFramebuffer = createRTTFrameBuffer()
+    }
 
 
 
@@ -420,7 +428,7 @@
     gl.useProgram(directTextureProgram);
     gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
     gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, normalsTexture);
+    gl.bindTexture(gl.TEXTURE_2D, normalsFramebuffer.texture);
     gl.uniform1i(directTextureProgram.samplerUniform, 0);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, directTextureVertexPositionBuffer);
@@ -461,7 +469,7 @@
     initGL(canvas);
     initShaders();
     initBuffers();
-    initNormalsFramebuffer();
+    initRTTFramebuffers();
     loadTeapot();
 
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
