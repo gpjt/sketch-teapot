@@ -80,7 +80,11 @@ void main(void) {
         for (float i=-1; i<=1; i++) {
             for (float j=-1; j<=1; j++) {
                 xSlope += texture2D(uSampler, vec2(vTextureCoord.s + i/512, vTextureCoord.t + j/512)).r * xKernel[int(i)+1][int(j)+1];
+                xSlope += texture2D(uSampler, vec2(vTextureCoord.s + i/512, vTextureCoord.t + j/512)).g * xKernel[int(i)+1][int(j)+1];
+                xSlope += texture2D(uSampler, vec2(vTextureCoord.s + i/512, vTextureCoord.t + j/512)).b * xKernel[int(i)+1][int(j)+1];
+                ySlope += texture2D(uSampler, vec2(vTextureCoord.s + i/512, vTextureCoord.t + j/512)).r * yKernel[int(i)+1][int(j)+1];
                 ySlope += texture2D(uSampler, vec2(vTextureCoord.s + i/512, vTextureCoord.t + j/512)).g * yKernel[int(i)+1][int(j)+1];
+                ySlope += texture2D(uSampler, vec2(vTextureCoord.s + i/512, vTextureCoord.t + j/512)).b * yKernel[int(i)+1][int(j)+1];
             }
         }
         float magnitude = length(vec2(xSlope, ySlope));
