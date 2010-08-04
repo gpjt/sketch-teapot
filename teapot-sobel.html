@@ -8,28 +8,6 @@
 <script type="text/javascript" src="glUtils.js"></script>
 
 
-<script id="direct-texture-fs" type="x-shader/x-fragment">
-  varying vec4 vTransformedNormal;
-  varying vec4 vPosition;
-  varying vec2 vTextureCoord;
-
-  uniform float uMaterialShininess;
-
-  uniform vec3 uAmbientColor;
-
-  uniform vec3 uPointLightingLocation;
-  uniform vec3 uPointLightingSpecularColor;
-  uniform vec3 uPointLightingDiffuseColor;
-
-  uniform sampler2D uSampler;
-
-
-  void main(void) {
-    gl_FragColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
-  }
-</script>
-
-
 <script id="normals-fs" type="x-shader/x-fragment">
   varying vec4 vTransformedNormal;
   varying vec4 vPosition;
@@ -71,6 +49,27 @@
     gl_Position = uPMatrix * vPosition;
     vTransformedNormal = uNMatrix * vec4(aVertexNormal, 1.0);
     vTextureCoord = aTextureCoord;
+  }
+</script>
+
+<script id="direct-texture-fs" type="x-shader/x-fragment">
+  varying vec4 vTransformedNormal;
+  varying vec4 vPosition;
+  varying vec2 vTextureCoord;
+
+  uniform float uMaterialShininess;
+
+  uniform vec3 uAmbientColor;
+
+  uniform vec3 uPointLightingLocation;
+  uniform vec3 uPointLightingSpecularColor;
+  uniform vec3 uPointLightingDiffuseColor;
+
+  uniform sampler2D uSampler;
+
+
+  void main(void) {
+    gl_FragColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
   }
 </script>
 
