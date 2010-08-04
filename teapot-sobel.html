@@ -340,8 +340,10 @@ void main(void) {
 
 
     var normalsFramebuffer;
+    var sobelFramebuffer;
     function initRTTFramebuffers() {
         normalsFramebuffer = createRTTFrameBuffer()
+        sobelFramebuffer = createRTTFrameBuffer()
     }
 
 
@@ -350,6 +352,8 @@ void main(void) {
     var teapotAngle = 180;
 
     function drawScene() {
+
+        // ------------ RENDER NORMALS TO FB --------------
         gl.bindFramebuffer(gl.FRAMEBUFFER, normalsFramebuffer);
         gl.useProgram(normalsProgram);
         gl.viewport(0, 0, normalsFramebuffer.width, normalsFramebuffer.height);
@@ -359,7 +363,7 @@ void main(void) {
             return;
         }
 
-        perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0);
+        perspective(45, normalsFramebuffer.width / normalsFramebuffer.height, 0.1, 100.0);
 
         loadIdentity();
 
@@ -376,6 +380,13 @@ void main(void) {
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, teapotVertexIndexBuffer);
         setMatrixUniforms(normalsProgram);
         gl.drawElements(gl.TRIANGLES, teapotVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+
+
+
+        // ------------ RENDER TEXTURE TO TEXTURE USING SOBEL OPERATOR --------------
+
+
+        // ------------ RENDER FINAL TEXTURE TO CANVAS --------------
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         gl.useProgram(directTextureProgram);
