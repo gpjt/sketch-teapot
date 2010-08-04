@@ -1,7 +1,7 @@
 <html>
 
 <head>
-<title>Learning WebGL &mdash; lesson 14</title>
+<title>Sketch teapot</title>
 <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
 
 <script type="text/javascript" src="sylvester.js"></script>
@@ -9,7 +9,6 @@
 
 
 <script id="per-fragment-lighting-fs" type="x-shader/x-fragment">
-  varying vec2 vTextureCoord;
   varying vec4 vTransformedNormal;
   varying vec4 vPosition;
 
@@ -17,7 +16,6 @@
 
   uniform bool uShowSpecularHighlights;
   uniform bool uUseLighting;
-  uniform bool uUseTextures;
 
   uniform vec3 uAmbientColor;
 
@@ -79,13 +77,11 @@
 <script id="per-fragment-lighting-vs" type="x-shader/x-vertex">
   attribute vec3 aVertexPosition;
   attribute vec3 aVertexNormal;
-  attribute vec2 aTextureCoord;
 
   uniform mat4 uMVMatrix;
   uniform mat4 uPMatrix;
   uniform mat4 uNMatrix;
 
-  varying vec2 vTextureCoord;
   varying vec4 vTransformedNormal;
   varying vec4 vPosition;
 
@@ -93,7 +89,6 @@
   void main(void) {
     vPosition = uMVMatrix * vec4(aVertexPosition, 1.0);
     gl_Position = uPMatrix * vPosition;
-    vTextureCoord = aTextureCoord;
     vTransformedNormal = uNMatrix * vec4(aVertexNormal, 1.0);
   }
 </script>
@@ -173,51 +168,17 @@
     shaderProgram.vertexNormalAttribute = gl.getAttribLocation(shaderProgram, "aVertexNormal");
     gl.enableVertexAttribArray(shaderProgram.vertexNormalAttribute);
 
-    shaderProgram.textureCoordAttribute = gl.getAttribLocation(shaderProgram, "aTextureCoord");
-    gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
-
     shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
     shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
     shaderProgram.nMatrixUniform = gl.getUniformLocation(shaderProgram, "uNMatrix");
     shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
     shaderProgram.materialShininessUniform = gl.getUniformLocation(shaderProgram, "uMaterialShininess");
     shaderProgram.showSpecularHighlightsUniform = gl.getUniformLocation(shaderProgram, "uShowSpecularHighlights");
-    shaderProgram.useTexturesUniform = gl.getUniformLocation(shaderProgram, "uUseTextures");
     shaderProgram.useLightingUniform = gl.getUniformLocation(shaderProgram, "uUseLighting");
     shaderProgram.ambientColorUniform = gl.getUniformLocation(shaderProgram, "uAmbientColor");
     shaderProgram.pointLightingLocationUniform = gl.getUniformLocation(shaderProgram, "uPointLightingLocation");
     shaderProgram.pointLightingSpecularColorUniform = gl.getUniformLocation(shaderProgram, "uPointLightingSpecularColor");
     shaderProgram.pointLightingDiffuseColorUniform = gl.getUniformLocation(shaderProgram, "uPointLightingDiffuseColor");
-  }
-
-
-  function handleLoadedTexture(texture) {
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.texImage2D(gl.TEXTURE_2D, 0, texture.image, true);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
-    gl.generateMipmap(gl.TEXTURE_2D);
-
-    gl.bindTexture(gl.TEXTURE_2D, null);
-  }
-
-
-  var earthTexture;
-  var galvanizedTexture;
-  function initTextures() {
-    earthTexture = gl.createTexture();
-    earthTexture.image = new Image();
-    earthTexture.image.onload = function() {
-      handleLoadedTexture(earthTexture)
-    }
-    earthTexture.image.src = "earth.jpg";
-
-    galvanizedTexture = gl.createTexture();
-    galvanizedTexture.image = new Image();
-    galvanizedTexture.image.onload = function() {
-      handleLoadedTexture(galvanizedTexture)
-    }
-    galvanizedTexture.image.src = "arroway.de_metal+structure+06_d100_flat.jpg";
   }
 
 
@@ -286,7 +247,6 @@
 
   var teapotVertexPositionBuffer;
   var teapotVertexNormalBuffer;
-  var teapotVertexTextureCoordBuffer;
   var teapotVertexIndexBuffer;
   function handleLoadedTeapot(teapotData) {
     teapotVertexNormalBuffer = gl.createBuffer();
@@ -294,12 +254,6 @@
     gl.bufferData(gl.ARRAY_BUFFER, new WebGLFloatArray(teapotData.vertexNormals), gl.STATIC_DRAW);
     teapotVertexNormalBuffer.itemSize = 3;
     teapotVertexNormalBuffer.numItems = teapotData.vertexNormals.length / 3;
-
-    teapotVertexTextureCoordBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, teapotVertexTextureCoordBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new WebGLFloatArray(teapotData.vertexTextureCoords), gl.STATIC_DRAW);
-    teapotVertexTextureCoordBuffer.itemSize = 2;
-    teapotVertexTextureCoordBuffer.numItems = teapotData.vertexTextureCoords.length / 2;
 
     teapotVertexPositionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, teapotVertexPositionBuffer);
@@ -335,7 +289,7 @@
     gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    if (teapotVertexPositionBuffer == null || teapotVertexNormalBuffer == null || teapotVertexTextureCoordBuffer == null || teapotVertexIndexBuffer == null) {
+    if (teapotVertexPositionBuffer == null || teapotVertexNormalBuffer == null || teapotVertexIndexBuffer == null) {
       return;
     }
 
@@ -376,29 +330,16 @@
       );
     }
 
-    var texture = document.getElementById("texture").value;
-    gl.uniform1i(shaderProgram.useTexturesUniform, texture != "none");
-
     loadIdentity();
 
     mvTranslate([0, 0, -40]);
     mvRotate(23.4, [1, 0, -1]);
     mvRotate(teapotAngle, [0, 1, 0]);
-    gl.activeTexture(gl.TEXTURE0);
-    if (texture == "earth") {
-      gl.bindTexture(gl.TEXTURE_2D, earthTexture);
-    } else if (texture == "galvanized") {
-      gl.bindTexture(gl.TEXTURE_2D, galvanizedTexture);
-    }
-    gl.uniform1i(shaderProgram.samplerUniform, 0);
 
     gl.uniform1f(shaderProgram.materialShininessUniform, parseFloat(document.getElementById("shininess").value));
 
     gl.bindBuffer(gl.ARRAY_BUFFER, teapotVertexPositionBuffer);
     gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, teapotVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, teapotVertexTextureCoordBuffer);
-    gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, teapotVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, teapotVertexNormalBuffer);
     gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute, teapotVertexNormalBuffer.itemSize, gl.FLOAT, false, 0, 0);
@@ -432,7 +373,6 @@
     var canvas = document.getElementById("lesson14-canvas");
     initGL(canvas);
     initShaders();
-    initTextures();
     loadTeapot();
 
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -475,12 +415,6 @@
   <br/>
 <input type="checkbox" id="specular" checked /> Show specular highlight<br/>
 <input type="checkbox" id="lighting" checked /> Use lighting<br/>
-Texture:
-<select id="texture">
-  <option value="none">None</option>
-  <option selected value="galvanized">Galvanized</option>
-  <option value="earth">Earth</option>
-</select>
 
 <br/>
 <h2>Material:</h2>
@@ -525,13 +459,6 @@ Texture:
 </tr>
 </table>
 
-
-<br/>
-Galvanized texture courtesy of <a href="http://www.arroway-textures.com/">Arroway Textures</a>.<br/>
-Earth texture courtesy of <a href="http://www.esa.int/esaEO/SEMGSY2IU7E_index_0.html">the European Space Agency/Envisat</a>.<br/>
-<br/>
-
-  <a href="http://learningwebgl.com/blog/?p=1658">&lt;&lt; Back to Lesson 14</a><br />
 </body>
 
 </html>
