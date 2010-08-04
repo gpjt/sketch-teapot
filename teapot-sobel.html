@@ -385,6 +385,24 @@ void main(void) {
 
         // ------------ RENDER TEXTURE TO TEXTURE USING SOBEL OPERATOR --------------
 
+        sobelProgram = directTextureProgram;
+        gl.bindFramebuffer(gl.FRAMEBUFFER, sobelFramebuffer);
+        gl.useProgram(sobelProgram);
+        gl.viewport(0, 0, sobelFramebuffer.width, sobelFramebuffer.height);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, normalsFramebuffer.texture);
+        gl.uniform1i(sobelProgram.samplerUniform, 0);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, directTextureVertexPositionBuffer);
+        gl.vertexAttribPointer(sobelProgram.vertexPositionAttribute, directTextureVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, directTextureVertexTextureCoordBuffer);
+        gl.vertexAttribPointer(sobelProgram.textureCoordAttribute, directTextureVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+        setMatrixUniforms(sobelProgram);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, directTextureVertexPositionBuffer.numItems);
+
+
 
         // ------------ RENDER FINAL TEXTURE TO CANVAS --------------
 
