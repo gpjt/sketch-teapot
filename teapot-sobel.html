@@ -53,18 +53,7 @@
 </script>
 
 <script id="direct-texture-fs" type="x-shader/x-fragment">
-  varying vec4 vTransformedNormal;
-  varying vec4 vPosition;
   varying vec2 vTextureCoord;
-
-  uniform float uMaterialShininess;
-
-  uniform vec3 uAmbientColor;
-
-  uniform vec3 uPointLightingLocation;
-  uniform vec3 uPointLightingSpecularColor;
-  uniform vec3 uPointLightingDiffuseColor;
-
   uniform sampler2D uSampler;
 
 
@@ -76,15 +65,8 @@
 
 <script id="flat-vs" type="x-shader/x-vertex">
   attribute vec3 aVertexPosition;
-  attribute vec3 aVertexNormal;
   attribute vec2 aTextureCoord;
 
-  uniform mat4 uMVMatrix;
-  uniform mat4 uPMatrix;
-  uniform mat4 uNMatrix;
-
-  varying vec4 vTransformedNormal;
-  varying vec4 vPosition;
   varying vec2 vTextureCoord;
 
 
@@ -163,13 +145,19 @@
     gl.useProgram(program);
 
     program.vertexPositionAttribute = gl.getAttribLocation(program, "aVertexPosition");
-    gl.enableVertexAttribArray(program.vertexPositionAttribute);
+    if (program.vertexPositionAttribute != -1) {
+        gl.enableVertexAttribArray(program.vertexPositionAttribute);
+    }
 
     program.vertexNormalAttribute = gl.getAttribLocation(program, "aVertexNormal");
-    gl.enableVertexAttribArray(program.vertexNormalAttribute);
+    if (program.vertexNormalAttribute != -1) {
+        gl.enableVertexAttribArray(program.vertexNormalAttribute);
+    }
 
     program.textureCoordAttribute = gl.getAttribLocation(program, "aTextureCoord");
-    gl.enableVertexAttribArray(program.textureCoordAttribute);
+    if (program.textureCoordAttribute != -1) {
+        gl.enableVertexAttribArray(program.textureCoordAttribute);
+    }
 
     program.pMatrixUniform = gl.getUniformLocation(program, "uPMatrix");
     program.mvMatrixUniform = gl.getUniformLocation(program, "uMVMatrix");
@@ -436,9 +424,6 @@
 
     gl.bindBuffer(gl.ARRAY_BUFFER, directTextureVertexTextureCoordBuffer);
     gl.vertexAttribPointer(directTextureProgram.textureCoordAttribute, directTextureVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, directTextureNormalsBuffer);
-    gl.vertexAttribPointer(directTextureProgram.vertexNormalAttribute, directTextureNormalsBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
     setMatrixUniforms(directTextureProgram);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, directTextureVertexPositionBuffer.numItems);
