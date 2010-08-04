@@ -395,42 +395,42 @@ void main(void) {
     }
 
 
-  var lastTime = 0;
-  function animate() {
-    var timeNow = new Date().getTime();
-    if (lastTime != 0) {
-      var elapsed = timeNow - lastTime;
+    var lastTime = 0;
+    function animate() {
+        var timeNow = new Date().getTime();
+        if (lastTime != 0) {
+            var elapsed = timeNow - lastTime;
 
-      teapotAngle += 0.05 * elapsed;
+            teapotAngle += 0.05 * elapsed;
+        }
+        lastTime = timeNow;
     }
-    lastTime = timeNow;
-  }
 
 
 
-  function tick() {
-    drawScene();
-    animate();
-  }
+    function tick() {
+        drawScene();
+        animate();
+    }
 
 
-  function webGLStart() {
-    var canvas = document.getElementById("teapot-canvas");
-    initGL(canvas);
-    initShaders();
-    initBuffers();
-    initRTTFramebuffers();
-    loadTeapot();
+    function webGLStart() {
+        var canvas = document.getElementById("teapot-canvas");
+        initGL(canvas);
+        initShaders();
+        initBuffers();
+        initRTTFramebuffers();
+        loadTeapot();
 
-    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+        gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
-    gl.clearDepth(1.0);
+        gl.clearDepth(1.0);
 
-    gl.enable(gl.DEPTH_TEST);
-    gl.depthFunc(gl.LEQUAL);
+        gl.enable(gl.DEPTH_TEST);
+        gl.depthFunc(gl.LEQUAL);
 
-    setInterval(tick, 15);
-  }
+        setInterval(tick, 15);
+    }
 
 
 
