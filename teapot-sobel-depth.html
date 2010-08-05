@@ -82,7 +82,7 @@ void main(void) {
         for (float i=-1; i<=1; i++) {
             for (float j=-1; j<=1; j++) {
                 vec4 vDepth = texture2D(uSampler, vec2(vTextureCoord.s + i/512, vTextureCoord.t + j/512));
-                float depth = vDepth.r + vDepth.g / 256.0 + vDepth.b / 65536.0 + vDepth.a;
+                float depth = vDepth.r + vDepth.g / 256.0 + vDepth.b / 65536.0 + vDepth.a / 16777216.0;
 
                 xSlope += depth * xKernel[int(i)+1][int(j)+1];
                 ySlope += depth * yKernel[int(i)+1][int(j)+1];
@@ -383,7 +383,7 @@ void main(void) {
     function drawScene() {
 
         // ------------ RENDER DEPTH TO FB --------------
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, depthFramebuffer);
         gl.useProgram(depthProgram);
         gl.viewport(0, 0, depthFramebuffer.width, depthFramebuffer.height);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -412,23 +412,23 @@ void main(void) {
 
         // ------------ RENDER TEXTURE TO CANVAS USING SOBEL OPERATOR --------------
 
-        //gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        //gl.useProgram(sobelProgram);
-        //gl.viewport(0, 0, sobelFramebuffer.width, sobelFramebuffer.height);
-        //gl.activeTexture(gl.TEXTURE0);
-        //gl.bindTexture(gl.TEXTURE_2D, depthFramebuffer.texture);
-        //gl.uniform1i(sobelProgram.samplerUniform, 0);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.useProgram(sobelProgram);
+        gl.viewport(0, 0, sobelFramebuffer.width, sobelFramebuffer.height);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, depthFramebuffer.texture);
+        gl.uniform1i(sobelProgram.samplerUniform, 0);
 
-        //gl.bindBuffer(gl.ARRAY_BUFFER, directTextureVertexPositionBuffer);
-        //gl.enableVertexAttribArray(sobelProgram.vertexPositionAttribute);
-        //gl.vertexAttribPointer(sobelProgram.vertexPositionAttribute, directTextureVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+        gl.bindBuffer(gl.ARRAY_BUFFER, directTextureVertexPositionBuffer);
+        gl.enableVertexAttribArray(sobelProgram.vertexPositionAttribute);
+        gl.vertexAttribPointer(sobelProgram.vertexPositionAttribute, directTextureVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
-        //gl.bindBuffer(gl.ARRAY_BUFFER, directTextureVertexTextureCoordBuffer);
-        //gl.enableVertexAttribArray(sobelProgram.textureCoordAttribute);
-        //gl.vertexAttribPointer(sobelProgram.textureCoordAttribute, directTextureVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
+        gl.bindBuffer(gl.ARRAY_BUFFER, directTextureVertexTextureCoordBuffer);
+        gl.enableVertexAttribArray(sobelProgram.textureCoordAttribute);
+        gl.vertexAttribPointer(sobelProgram.textureCoordAttribute, directTextureVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
-        //setMatrixUniforms(sobelProgram);
-        //gl.drawArrays(gl.TRIANGLE_STRIP, 0, directTextureVertexPositionBuffer.numItems);
+        setMatrixUniforms(sobelProgram);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, directTextureVertexPositionBuffer.numItems);
 
     }
 
