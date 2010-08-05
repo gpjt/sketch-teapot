@@ -15,7 +15,7 @@
         float depth = vDepth / 100.0;
 
 
-        gl_FragColor = vec4(1.0, mod(depth * 256.0, 1.0), mod(depth * 65536.0, 1.0), mod(depth * 16777216.0, 1.0));
+        gl_FragColor = vec4(depth, mod(depth * 256.0, 1.0), mod(depth * 65536.0, 1.0), mod(depth * 16777216.0, 1.0));
     }
 </script>
 
@@ -81,12 +81,11 @@ void main(void) {
         float ySlope = 0;
         for (float i=-1; i<=1; i++) {
             for (float j=-1; j<=1; j++) {
-                xSlope += texture2D(uSampler, vec2(vTextureCoord.s + i/512, vTextureCoord.t + j/512)).r * xKernel[int(i)+1][int(j)+1];
-                xSlope += texture2D(uSampler, vec2(vTextureCoord.s + i/512, vTextureCoord.t + j/512)).g * xKernel[int(i)+1][int(j)+1];
-                xSlope += texture2D(uSampler, vec2(vTextureCoord.s + i/512, vTextureCoord.t + j/512)).b * xKernel[int(i)+1][int(j)+1];
-                ySlope += texture2D(uSampler, vec2(vTextureCoord.s + i/512, vTextureCoord.t + j/512)).r * yKernel[int(i)+1][int(j)+1];
-                ySlope += texture2D(uSampler, vec2(vTextureCoord.s + i/512, vTextureCoord.t + j/512)).g * yKernel[int(i)+1][int(j)+1];
-                ySlope += texture2D(uSampler, vec2(vTextureCoord.s + i/512, vTextureCoord.t + j/512)).b * yKernel[int(i)+1][int(j)+1];
+                vec4 vDepth = texture2D(uSampler, vec2(vTextureCoord.s + i/512, vTextureCoord.t + j/512));
+                float depth = vDepth.r + vDepth.g / 256.0 + vDepth.b / 65536.0 + vDepth.a;
+
+                xSlope += depth * xKernel[int(i)+1][int(j)+1];
+                ySlope += depth * yKernel[int(i)+1][int(j)+1];
             }
         }
         float magnitude = length(vec2(xSlope, ySlope));
@@ -188,7 +187,7 @@ void main(void) {
     var directTextureProgram;
     function initShaders() {
         depthProgram = createProgram("depth-fs", "matrix-vs");
-        //sobelProgram = createProgram("sobel-fs", "flat-vs");
+        sobelProgram = createProgram("sobel-fs", "flat-vs");
         //directTextureProgram = createProgram("direct-texture-fs", "flat-vs");
     }
 
@@ -369,10 +368,10 @@ void main(void) {
 
 
 
-    var normalsFramebuffer;
+    var depthFramebuffer;
     var sobelFramebuffer;
     function initRTTFramebuffers() {
-        normalsFramebuffer = createRTTFrameBuffer();
+        depthFramebuffer = createRTTFrameBuffer();
         sobelFramebuffer = createRTTFrameBuffer();
     }
 
@@ -386,14 +385,14 @@ void main(void) {
         // ------------ RENDER DEPTH TO FB --------------
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         gl.useProgram(depthProgram);
-        gl.viewport(0, 0, normalsFramebuffer.width, normalsFramebuffer.height);
+        gl.viewport(0, 0, depthFramebuffer.width, depthFramebuffer.height);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         if (teapotVertexPositionBuffer == null || teapotVertexNormalBuffer == null || teapotVertexTextureCoordBuffer == null || teapotVertexIndexBuffer == null) {
             return;
         }
 
-        perspective(45, normalsFramebuffer.width / normalsFramebuffer.height, 0.1, 100.0);
+        perspective(45, depthFramebuffer.width / depthFramebuffer.height, 0.1, 100.0);
 
         loadIdentity();
 
@@ -411,13 +410,13 @@ void main(void) {
 
 
 
-        // ------------ RENDER TEXTURE TO TEXTURE USING SOBEL OPERATOR --------------
+        // ------------ RENDER TEXTURE TO CANVAS USING SOBEL OPERATOR --------------
 
         //gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         //gl.useProgram(sobelProgram);
         //gl.viewport(0, 0, sobelFramebuffer.width, sobelFramebuffer.height);
         //gl.activeTexture(gl.TEXTURE0);
-        //gl.bindTexture(gl.TEXTURE_2D, normalsFramebuffer.texture);
+        //gl.bindTexture(gl.TEXTURE_2D, depthFramebuffer.texture);
         //gl.uniform1i(sobelProgram.samplerUniform, 0);
 
         //gl.bindBuffer(gl.ARRAY_BUFFER, directTextureVertexPositionBuffer);
