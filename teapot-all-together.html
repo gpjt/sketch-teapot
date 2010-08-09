@@ -490,6 +490,10 @@ void main(void) {
         if (depthSobel) {
             renderTextureFlat();
         }
+        var normalsSobel = document.getElementById("normals-sobel").checked;
+        if (normalsSobel) {
+            renderTextureFlat();
+        }
     }
 
 
