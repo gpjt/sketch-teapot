@@ -151,12 +151,12 @@ void main(void) {
 
 
     function createProgram(fsId, vsId) {
-        var normalsFragmentShader = getShader(gl, fsId);
+        var fragmentShader = getShader(gl, fsId);
         var vertexShader = getShader(gl, vsId);
 
         var program = gl.createProgram();
         gl.attachShader(program, vertexShader);
-        gl.attachShader(program, normalsFragmentShader);
+        gl.attachShader(program, fragmentShader);
         gl.linkProgram(program);
 
         if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
