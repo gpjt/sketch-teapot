@@ -369,21 +369,16 @@ void main(void) {
 
 
     var depthFramebuffer;
+    var normalsFramebuffer;
     function initRTTFramebuffers() {
         depthFramebuffer = createRTTFrameBuffer();
+        normalsFramebuffer = createRTTFrameBuffer();
     }
-
-
 
 
     var teapotAngle = 180;
 
-    function drawScene() {
-
-        // ------------ RENDER DEPTH TO FB --------------
-        gl.bindFramebuffer(gl.FRAMEBUFFER, depthFramebuffer);
-        gl.useProgram(depthProgram);
-        gl.viewport(0, 0, depthFramebuffer.width, depthFramebuffer.height);
+    function renderTeapot() {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         if (teapotVertexPositionBuffer == null || teapotVertexNormalBuffer == null || teapotVertexTextureCoordBuffer == null || teapotVertexIndexBuffer == null) {
@@ -405,7 +400,18 @@ void main(void) {
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, teapotVertexIndexBuffer);
         setMatrixUniforms(depthProgram);
         gl.drawElements(gl.TRIANGLES, teapotVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+    }
 
+
+
+
+    function drawScene() {
+
+        // Render teapot to depth and normals FBs.
+        gl.bindFramebuffer(gl.FRAMEBUFFER, depthFramebuffer);
+        gl.useProgram(depthProgram);
+        gl.viewport(0, 0, depthFramebuffer.width, depthFramebuffer.height);
+        renderTeapot();
 
 
         // ------------ RENDER TEXTURE TO CANVAS USING SOBEL OPERATOR --------------
