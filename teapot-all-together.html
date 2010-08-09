@@ -184,11 +184,9 @@ void main(void) {
 
     var depthProgram;
     var sobelProgram;
-    var directTextureProgram;
     function initShaders() {
         depthProgram = createProgram("depth-fs", "matrix-vs");
         sobelProgram = createProgram("sobel-fs", "flat-vs");
-        //directTextureProgram = createProgram("direct-texture-fs", "flat-vs");
     }
 
 
