@@ -98,6 +98,45 @@ void main(void) {
 </script>
 
 
+<script id="normals-fs" type="x-shader/x-fragment">
+    varying vec2 vTextureCoord;
+    uniform sampler2D uSampler;
+
+    void main(void) {
+        mat3 xKernel = mat3(
+            -1.0, 0, 1.0,
+            -2.0, 0, 2.0,
+            -1.0, 0, 1.0
+        );
+        mat3 yKernel = mat3(
+            -1.0, -2.0, -1.0,
+             0.0,  0.0,  0.0,
+             1.0,  2.0,  1.0
+        );
+
+        float xSlope = 0;
+        float ySlope = 0;
+        for (float i=-1; i<=1; i++) {
+            for (float j=-1; j<=1; j++) {
+                xSlope += texture2D(uSampler, vec2(vTextureCoord.s + i/512, vTextureCoord.t + j/512)).r * xKernel[int(i)+1][int(j)+1];
+                xSlope += texture2D(uSampler, vec2(vTextureCoord.s + i/512, vTextureCoord.t + j/512)).g * xKernel[int(i)+1][int(j)+1];
+                xSlope += texture2D(uSampler, vec2(vTextureCoord.s + i/512, vTextureCoord.t + j/512)).b * xKernel[int(i)+1][int(j)+1];
+                ySlope += texture2D(uSampler, vec2(vTextureCoord.s + i/512, vTextureCoord.t + j/512)).r * yKernel[int(i)+1][int(j)+1];
+                ySlope += texture2D(uSampler, vec2(vTextureCoord.s + i/512, vTextureCoord.t + j/512)).g * yKernel[int(i)+1][int(j)+1];
+                ySlope += texture2D(uSampler, vec2(vTextureCoord.s + i/512, vTextureCoord.t + j/512)).b * yKernel[int(i)+1][int(j)+1];
+            }
+        }
+        float magnitude = length(vec2(xSlope, ySlope));
+        if (magnitude > 0.6) {
+            gl_FragColor += vec4(0.0, 0.0, 0.0, 1.0);
+        } else {
+            gl_FragColor += vec4(1.0, 1.0, 1.0, 1.0);
+        }
+    }
+</script>
+
+
+
 <script type="text/javascript">
 
     var gl;
@@ -184,9 +223,11 @@ void main(void) {
 
     var depthProgram;
     var depthSobelProgram;
+    var normalsSobelProgram;
     function initShaders() {
         depthProgram = createProgram("depth-fs", "matrix-vs");
         depthSobelProgram = createProgram("depth-sobel-fs", "flat-vs");
+        normalsSobelProgram = createProgram("depth-sobel-fs", "flat-vs");
     }
 
 
