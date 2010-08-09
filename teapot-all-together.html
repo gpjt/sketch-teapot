@@ -447,12 +447,30 @@ void main(void) {
 
 
 
+    function renderTextureFlat() {
+        gl.useProgram(depthSobelProgram);
+        gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, depthFramebuffer.texture);
+        gl.uniform1i(depthSobelProgram.samplerUniform, 0);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, directTextureVertexPositionBuffer);
+        gl.enableVertexAttribArray(depthSobelProgram.vertexPositionAttribute);
+        gl.vertexAttribPointer(depthSobelProgram.vertexPositionAttribute, directTextureVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, directTextureVertexTextureCoordBuffer);
+        gl.enableVertexAttribArray(depthSobelProgram.textureCoordAttribute);
+        gl.vertexAttribPointer(depthSobelProgram.textureCoordAttribute, directTextureVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+        setMatrixUniforms(depthSobelProgram);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, directTextureVertexPositionBuffer.numItems);
+    }
+
 
     function drawScene() {
 
         // Render teapot to depth and normals FBs.
         renderTeapot(depthFramebuffer, depthProgram);
-
 
         // Render various passes to canvas
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -460,22 +478,7 @@ void main(void) {
 
         var depthSobel = document.getElementById("depth-sobel").checked;
         if (depthSobel) {
-            gl.useProgram(depthSobelProgram);
-            gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
-            gl.activeTexture(gl.TEXTURE0);
-            gl.bindTexture(gl.TEXTURE_2D, depthFramebuffer.texture);
-            gl.uniform1i(depthSobelProgram.samplerUniform, 0);
-
-            gl.bindBuffer(gl.ARRAY_BUFFER, directTextureVertexPositionBuffer);
-            gl.enableVertexAttribArray(depthSobelProgram.vertexPositionAttribute);
-            gl.vertexAttribPointer(depthSobelProgram.vertexPositionAttribute, directTextureVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
-
-            gl.bindBuffer(gl.ARRAY_BUFFER, directTextureVertexTextureCoordBuffer);
-            gl.enableVertexAttribArray(depthSobelProgram.textureCoordAttribute);
-            gl.vertexAttribPointer(depthSobelProgram.textureCoordAttribute, directTextureVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
-
-            setMatrixUniforms(depthSobelProgram);
-            gl.drawArrays(gl.TRIANGLE_STRIP, 0, directTextureVertexPositionBuffer.numItems);
+            renderTextureFlat();
         }
     }
 
