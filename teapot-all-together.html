@@ -417,7 +417,11 @@ void main(void) {
 
     var teapotAngle = 180;
 
-    function renderTeapot() {
+    function renderTeapot(framebuffer, program) {
+        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+        gl.useProgram(program);
+        gl.viewport(0, 0, framebuffer.width, framebuffer.height);
+
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         if (teapotVertexPositionBuffer == null || teapotVertexNormalBuffer == null || teapotVertexTextureCoordBuffer == null || teapotVertexIndexBuffer == null) {
@@ -447,10 +451,7 @@ void main(void) {
     function drawScene() {
 
         // Render teapot to depth and normals FBs.
-        gl.bindFramebuffer(gl.FRAMEBUFFER, depthFramebuffer);
-        gl.useProgram(depthProgram);
-        gl.viewport(0, 0, depthFramebuffer.width, depthFramebuffer.height);
-        renderTeapot();
+        renderTeapot(depthFramebuffer, depthProgram);
 
 
         // Render various passes to canvas
