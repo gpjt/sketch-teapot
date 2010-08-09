@@ -61,7 +61,7 @@ void main(void) {
 </script>
 
 
-<script id="sobel-fs" type="x-shader/x-fragment">
+<script id="depth-sobel-fs" type="x-shader/x-fragment">
     varying vec2 vTextureCoord;
     uniform sampler2D uSampler;
 
@@ -183,10 +183,10 @@ void main(void) {
 
 
     var depthProgram;
-    var sobelProgram;
+    var depthSobelProgram;
     function initShaders() {
         depthProgram = createProgram("depth-fs", "matrix-vs");
-        sobelProgram = createProgram("sobel-fs", "flat-vs");
+        depthSobelProgram = createProgram("depth-sobel-fs", "flat-vs");
     }
 
 
@@ -415,21 +415,21 @@ void main(void) {
         // ------------ RENDER TEXTURE TO CANVAS USING SOBEL OPERATOR --------------
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        gl.useProgram(sobelProgram);
+        gl.useProgram(depthSobelProgram);
         gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, depthFramebuffer.texture);
-        gl.uniform1i(sobelProgram.samplerUniform, 0);
+        gl.uniform1i(depthSobelProgram.samplerUniform, 0);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, directTextureVertexPositionBuffer);
-        gl.enableVertexAttribArray(sobelProgram.vertexPositionAttribute);
-        gl.vertexAttribPointer(sobelProgram.vertexPositionAttribute, directTextureVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(depthSobelProgram.vertexPositionAttribute);
+        gl.vertexAttribPointer(depthSobelProgram.vertexPositionAttribute, directTextureVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, directTextureVertexTextureCoordBuffer);
-        gl.enableVertexAttribArray(sobelProgram.textureCoordAttribute);
-        gl.vertexAttribPointer(sobelProgram.textureCoordAttribute, directTextureVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(depthSobelProgram.textureCoordAttribute);
+        gl.vertexAttribPointer(depthSobelProgram.textureCoordAttribute, directTextureVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
-        setMatrixUniforms(sobelProgram);
+        setMatrixUniforms(depthSobelProgram);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, directTextureVertexPositionBuffer.numItems);
 
     }
