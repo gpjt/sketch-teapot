@@ -1,0 +1,537 @@
+<html>
+
+<head>
+<title>Sketch teapot</title>
+<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+
+<script type="text/javascript" src="sylvester.js"></script>
+<script type="text/javascript" src="glUtils.js"></script>
+
+
+<script id="depth-fs" type="x-shader/x-fragment">
+    varying float vDepth;
+
+    void main(void) {
+        float depth = vDepth / 100.0;
+
+
+        gl_FragColor = vec4(depth, mod(depth * 256.0, 1.0), mod(depth * 65536.0, 1.0), mod(depth * 16777216.0, 1.0));
+    }
+</script>
+
+
+<script id="matrix-vs" type="x-shader/x-vertex">
+    attribute vec3 aVertexPosition;
+
+    uniform mat4 uMVMatrix;
+    uniform mat4 uPMatrix;
+    uniform mat4 uNMatrix;
+
+    varying float vDepth;
+
+
+    void main(void) {
+        gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+        vDepth = gl_Position.z;
+    }
+</script>
+
+<script id="direct-texture-fs" type="x-shader/x-fragment">
+    varying vec2 vTextureCoord;
+    uniform sampler2D uSampler;
+
+
+    void main(void) {
+        gl_FragColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
+    }
+</script>
+
+
+<script id="flat-vs" type="x-shader/x-vertex">
+attribute vec3 aVertexPosition;
+attribute vec2 aTextureCoord;
+
+varying vec2 vTextureCoord;
+
+
+void main(void) {
+    gl_Position = vec4(aVertexPosition, 1.0);
+    vTextureCoord = aTextureCoord;
+}
+</script>
+
+
+<script id="sobel-fs" type="x-shader/x-fragment">
+    varying vec2 vTextureCoord;
+    uniform sampler2D uSampler;
+
+    void main(void) {
+        mat3 xKernel = mat3(
+            -1.0, 0, 1.0,
+            -2.0, 0, 2.0,
+            -1.0, 0, 1.0
+        );
+        mat3 yKernel = mat3(
+            -1.0, -2.0, -1.0,
+             0.0,  0.0,  0.0,
+             1.0,  2.0,  1.0
+        );
+
+        float xSlope = 0;
+        float ySlope = 0;
+        for (float i=-1; i<=1; i++) {
+            for (float j=-1; j<=1; j++) {
+                vec4 vDepth = texture2D(uSampler, vec2(vTextureCoord.s + i/512, vTextureCoord.t + j/512));
+                float depth = vDepth.r + vDepth.g / 256.0 + vDepth.b / 65536.0 + vDepth.a / 16777216.0;
+
+                xSlope += depth * xKernel[int(i)+1][int(j)+1];
+                ySlope += depth * yKernel[int(i)+1][int(j)+1];
+            }
+        }
+        float magnitude = length(vec2(xSlope, ySlope));
+        if (magnitude > 0.045) {
+            gl_FragColor += vec4(0.0, 0.0, 0.0, 1.0);
+        } else {
+            gl_FragColor += vec4(1.0, 1.0, 1.0, 1.0);
+        }
+    }
+</script>
+
+
+<script type="text/javascript">
+
+    var gl;
+    function initGL(canvas) {
+        try {
+            gl = canvas.getContext("experimental-webgl");
+            gl.viewportWidth = canvas.width;
+            gl.viewportHeight = canvas.height;
+        } catch(e) {
+        }
+            if (!gl) {
+            alert("Could not initialise WebGL, sorry :-(");
+        }
+    }
+
+
+    function getShader(gl, id) {
+        var shaderScript = document.getElementById(id);
+        if (!shaderScript) {
+            return null;
+        }
+
+        var str = "";
+        var k = shaderScript.firstChild;
+        while (k) {
+            if (k.nodeType == 3) {
+                str += k.textContent;
+            }
+            k = k.nextSibling;
+        }
+
+        var shader;
+        if (shaderScript.type == "x-shader/x-fragment") {
+            shader = gl.createShader(gl.FRAGMENT_SHADER);
+        } else if (shaderScript.type == "x-shader/x-vertex") {
+            shader = gl.createShader(gl.VERTEX_SHADER);
+        } else {
+            return null;
+        }
+
+        gl.shaderSource(shader, str);
+        gl.compileShader(shader);
+
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+            alert(gl.getShaderInfoLog(shader));
+            return null;
+        }
+
+        return shader;
+    }
+
+
+    function createProgram(fsId, vsId) {
+        var normalsFragmentShader = getShader(gl, fsId);
+        var vertexShader = getShader(gl, vsId);
+
+        var program = gl.createProgram();
+        gl.attachShader(program, vertexShader);
+        gl.attachShader(program, normalsFragmentShader);
+        gl.linkProgram(program);
+
+        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+            alert("Could not initialise shaders " + vsId + ", " + fsId + gl.getProgramInfoLog(program));
+        }
+
+        gl.useProgram(program);
+
+        program.vertexPositionAttribute = gl.getAttribLocation(program, "aVertexPosition");
+        program.vertexNormalAttribute = gl.getAttribLocation(program, "aVertexNormal");
+        program.textureCoordAttribute = gl.getAttribLocation(program, "aTextureCoord");
+        program.pMatrixUniform = gl.getUniformLocation(program, "uPMatrix");
+        program.mvMatrixUniform = gl.getUniformLocation(program, "uMVMatrix");
+        program.nMatrixUniform = gl.getUniformLocation(program, "uNMatrix");
+        program.samplerUniform = gl.getUniformLocation(program, "uSampler");
+        program.materialShininessUniform = gl.getUniformLocation(program, "uMaterialShininess");
+        program.ambientColorUniform = gl.getUniformLocation(program, "uAmbientColor");
+        program.pointLightingLocationUniform = gl.getUniformLocation(program, "uPointLightingLocation");
+        program.pointLightingSpecularColorUniform = gl.getUniformLocation(program, "uPointLightingSpecularColor");
+        program.pointLightingDiffuseColorUniform = gl.getUniformLocation(program, "uPointLightingDiffuseColor");
+
+        return program;
+    }
+
+
+    var depthProgram;
+    var sobelProgram;
+    var directTextureProgram;
+    function initShaders() {
+        depthProgram = createProgram("depth-fs", "matrix-vs");
+        sobelProgram = createProgram("sobel-fs", "flat-vs");
+        //directTextureProgram = createProgram("direct-texture-fs", "flat-vs");
+    }
+
+
+    var mvMatrix;
+    var mvMatrixStack = [];
+
+    function mvPushMatrix(m) {
+        if (m) {
+            mvMatrixStack.push(m.dup());
+            mvMatrix = m.dup();
+        } else {
+            mvMatrixStack.push(mvMatrix.dup());
+        }
+    }
+
+    function mvPopMatrix() {
+        if (mvMatrixStack.length == 0) {
+            throw "Invalid popMatrix!";
+        }
+        mvMatrix = mvMatrixStack.pop();
+        return mvMatrix;
+    }
+
+    function loadIdentity() {
+        mvMatrix = Matrix.I(4);
+    }
+
+
+    function multMatrix(m) {
+        mvMatrix = mvMatrix.x(m);
+    }
+
+
+    function mvTranslate(v) {
+        var m = Matrix.Translation($V([v[0], v[1], v[2]])).ensure4x4();
+        multMatrix(m);
+    }
+
+
+    function createRotationMatrix(angle, v) {
+        var arad = angle * Math.PI / 180.0;
+        return Matrix.Rotation(arad, $V([v[0], v[1], v[2]])).ensure4x4();
+    }
+
+
+    function mvRotate(angle, v) {
+        multMatrix(createRotationMatrix(angle, v));
+    }
+
+
+    var pMatrix;
+        function perspective(fovy, aspect, znear, zfar) {
+        pMatrix = makePerspective(fovy, aspect, znear, zfar);
+    }
+
+
+    function setMatrixUniforms(program) {
+        gl.uniformMatrix4fv(program.pMatrixUniform, false, new WebGLFloatArray(pMatrix.flatten()));
+        gl.uniformMatrix4fv(program.mvMatrixUniform, false, new WebGLFloatArray(mvMatrix.flatten()));
+
+        var normalMatrix = mvMatrix.inverse();
+        normalMatrix = normalMatrix.transpose();
+        gl.uniformMatrix4fv(program.nMatrixUniform, false, new WebGLFloatArray(normalMatrix.flatten()));
+    }
+
+
+    var teapotVertexPositionBuffer;
+    var teapotVertexNormalBuffer;
+    var teapotVertexTextureCoordBuffer;
+    var teapotVertexIndexBuffer;
+    function handleLoadedTeapot(teapotData) {
+        teapotVertexNormalBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, teapotVertexNormalBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new WebGLFloatArray(teapotData.vertexNormals), gl.STATIC_DRAW);
+        teapotVertexNormalBuffer.itemSize = 3;
+        teapotVertexNormalBuffer.numItems = teapotData.vertexNormals.length / 3;
+
+        teapotVertexTextureCoordBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, teapotVertexTextureCoordBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new WebGLFloatArray(teapotData.vertexTextureCoords), gl.STATIC_DRAW);
+        teapotVertexTextureCoordBuffer.itemSize = 2;
+        teapotVertexTextureCoordBuffer.numItems = teapotData.vertexTextureCoords.length / 2;
+
+        teapotVertexPositionBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, teapotVertexPositionBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new WebGLFloatArray(teapotData.vertexPositions), gl.STATIC_DRAW);
+        teapotVertexPositionBuffer.itemSize = 3;
+        teapotVertexPositionBuffer.numItems = teapotData.vertexPositions.length / 3;
+
+        teapotVertexIndexBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, teapotVertexIndexBuffer);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new WebGLUnsignedShortArray(teapotData.indices), gl.STREAM_DRAW);
+        teapotVertexIndexBuffer.itemSize = 1;
+        teapotVertexIndexBuffer.numItems = teapotData.indices.length;
+
+        document.getElementById("loadingtext").textContent = "";
+    }
+
+
+    function loadTeapot() {
+        var request = new XMLHttpRequest();
+        request.open("GET", "Teapot.json");
+        request.onreadystatechange = function() {
+            if (request.readyState == 4) {
+                handleLoadedTeapot(JSON.parse(request.responseText));
+            }
+        }
+        request.send();
+    }
+
+
+    var directTextureVertexPositionBuffer;
+    var directTextureVertexTextureCoordBuffer;
+    var directTextureNormalsBuffer;
+    function initBuffers() {
+        directTextureVertexPositionBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, directTextureVertexPositionBuffer);
+        var vertices = [
+             1.0,  1.0,
+            -1.0,  1.0,
+             1.0, -1.0,
+            -1.0, -1.0,
+        ];
+        gl.bufferData(gl.ARRAY_BUFFER, new WebGLFloatArray(vertices), gl.STATIC_DRAW);
+        directTextureVertexPositionBuffer.itemSize = 2;
+        directTextureVertexPositionBuffer.numItems = 4;
+
+        directTextureVertexTextureCoordBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, directTextureVertexTextureCoordBuffer);
+        var textureCoords = [
+            1.0,  1.0,
+            0.0,  1.0,
+            1.0,  0.0,
+            0.0,  0.0,
+        ];
+        gl.bufferData(gl.ARRAY_BUFFER, new WebGLFloatArray(textureCoords), gl.STATIC_DRAW);
+        directTextureVertexTextureCoordBuffer.itemSize = 2;
+        directTextureVertexTextureCoordBuffer.numItems = 4;
+    }
+
+
+
+    function createRTTFrameBuffer() {
+        framebuffer = gl.createFramebuffer();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+        framebuffer.width = 512;
+        framebuffer.height = 512;
+
+        framebuffer.texture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, framebuffer.texture);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+        gl.generateMipmap(gl.TEXTURE_2D);
+
+        try {
+            // Do it the way the spec requires
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, framebuffer.width, framebuffer.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+        } catch (exception) {
+            // Workaround for what appears to be a Minefield bug.
+            var textureStorage = new WebGLUnsignedByteArray(framebuffer.width * framebuffer.height * 4);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, framebuffer.width, framebuffer.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, textureStorage);
+        }
+
+        var renderbuffer = gl.createRenderbuffer();
+        gl.bindRenderbuffer(gl.RENDERBUFFER, renderbuffer);
+        gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, framebuffer.width, framebuffer.height);
+
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, framebuffer.texture, 0);
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, renderbuffer);
+
+        gl.bindTexture(gl.TEXTURE_2D, null);
+        gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+        return framebuffer;
+    }
+
+
+
+    var depthFramebuffer;
+    function initRTTFramebuffers() {
+        depthFramebuffer = createRTTFrameBuffer();
+    }
+
+
+
+
+    var teapotAngle = 180;
+
+    function drawScene() {
+
+        // ------------ RENDER DEPTH TO FB --------------
+        gl.bindFramebuffer(gl.FRAMEBUFFER, depthFramebuffer);
+        gl.useProgram(depthProgram);
+        gl.viewport(0, 0, depthFramebuffer.width, depthFramebuffer.height);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+        if (teapotVertexPositionBuffer == null || teapotVertexNormalBuffer == null || teapotVertexTextureCoordBuffer == null || teapotVertexIndexBuffer == null) {
+            return;
+        }
+
+        perspective(45, depthFramebuffer.width / depthFramebuffer.height, 0.1, 100.0);
+
+        loadIdentity();
+
+        mvTranslate([0, 0, -40]);
+        mvRotate(23.4, [1, 0, -1]);
+        mvRotate(teapotAngle, [0, 1, 0]);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, teapotVertexPositionBuffer);
+        gl.enableVertexAttribArray(depthProgram.vertexPositionAttribute);
+        gl.vertexAttribPointer(depthProgram.vertexPositionAttribute, teapotVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, teapotVertexIndexBuffer);
+        setMatrixUniforms(depthProgram);
+        gl.drawElements(gl.TRIANGLES, teapotVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+
+
+
+        // ------------ RENDER TEXTURE TO CANVAS USING SOBEL OPERATOR --------------
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.useProgram(sobelProgram);
+        gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, depthFramebuffer.texture);
+        gl.uniform1i(sobelProgram.samplerUniform, 0);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, directTextureVertexPositionBuffer);
+        gl.enableVertexAttribArray(sobelProgram.vertexPositionAttribute);
+        gl.vertexAttribPointer(sobelProgram.vertexPositionAttribute, directTextureVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, directTextureVertexTextureCoordBuffer);
+        gl.enableVertexAttribArray(sobelProgram.textureCoordAttribute);
+        gl.vertexAttribPointer(sobelProgram.textureCoordAttribute, directTextureVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+        setMatrixUniforms(sobelProgram);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, directTextureVertexPositionBuffer.numItems);
+
+    }
+
+
+    var lastTime = 0;
+    function animate() {
+        var timeNow = new Date().getTime();
+        if (lastTime != 0) {
+            var elapsed = timeNow - lastTime;
+
+            teapotAngle += 0.05 * elapsed;
+        }
+        lastTime = timeNow;
+    }
+
+
+
+    function tick() {
+        drawScene();
+        animate();
+    }
+
+
+    function webGLStart() {
+        var canvas = document.getElementById("teapot-canvas");
+        initGL(canvas);
+        initShaders();
+        initBuffers();
+        initRTTFramebuffers();
+        loadTeapot();
+
+        gl.clearColor(0.0, 0.0, 0.0, 1.0);
+
+        gl.clearDepth(1.0);
+
+        gl.enable(gl.DEPTH_TEST);
+        gl.depthFunc(gl.LEQUAL);
+
+        setInterval(tick, 15);
+    }
+
+
+
+</script>
+
+
+<style type="text/css">
+    #loadingtext {
+        position:absolute;
+        top:250px;
+        left:150px;
+        font-size:2em;
+        color: white;
+    }
+</style>
+
+
+</head>
+
+
+<body onload="webGLStart();">
+  <canvas id="teapot-canvas" style="border: none;" width="500" height="500"></canvas>
+
+  <div id="loadingtext">Loading world...</div>
+
+
+  <br/>
+
+<br/>
+<h2>Material:</h2>
+
+<table style="border: 0; padding: 10px;">
+<tr>
+<td><b>Shininess:</b>
+<td><input type="text" id="shininess" value="32.0" />
+</tr>
+</table>
+
+<h2>Point light:</h2>
+
+<table style="border: 0; padding: 10px;">
+<tr>
+<td><b>Location:</b>
+<td>X: <input type="text" id="lightPositionX" value="-10.0" />
+<td>Y: <input type="text" id="lightPositionY" value="4.0" />
+<td>Z: <input type="text" id="lightPositionZ" value="-20.0" />
+</tr>
+<tr>
+<td><b>Specular intensity:</b>
+<td>R: <input type="text" id="specularI" value="0.8" />
+</tr>
+<tr>
+<td><b>Diffuse intensity:</b>
+<td>R: <input type="text" id="diffuseI" value="0.8" />
+</tr>
+</table>
+
+<h2>Ambient light:</h2>
+<table style="border: 0; padding: 10px;">
+<tr>
+<td><b>Intensity:</b>
+<td>R: <input type="text" id="ambientI" value="0.2" />
+</tr>
+</table>
+
+</body>
+
+</html>
