@@ -428,6 +428,9 @@ void main(void) {
         gl.useProgram(program);
         gl.viewport(0, 0, framebuffer.width, framebuffer.height);
 
+        gl.enable(gl.DEPTH_TEST);
+        gl.depthFunc(gl.LEQUAL);
+
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         if (teapotVertexPositionBuffer == null || teapotVertexNormalBuffer == null || teapotVertexIndexBuffer == null) {
@@ -459,6 +462,10 @@ void main(void) {
 
     function renderTextureFlat(framebuffer, program) {
         gl.useProgram(program);
+
+        gl.disable(gl.DEPTH_TEST);
+        gl.enable(gl.BLEND);
+
         gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, framebuffer.texture);
@@ -527,9 +534,6 @@ void main(void) {
         gl.clearColor(1.0, 1.0, 1.0, 1.0);
 
         gl.clearDepth(1.0);
-
-        gl.enable(gl.DEPTH_TEST);
-        gl.depthFunc(gl.LEQUAL);
 
         setInterval(tick, 15);
     }
