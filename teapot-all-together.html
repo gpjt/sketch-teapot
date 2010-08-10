@@ -102,9 +102,9 @@ void main(void) {
         }
         float magnitude = length(vec2(xSlope, ySlope));
         if (magnitude > 0.045) {
-            gl_FragColor += vec4(0.0, 0.0, 0.0, 1.0);
+            gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
         } else {
-            gl_FragColor += vec4(1.0, 1.0, 1.0, 1.0);
+            gl_FragColor = vec4(1.0, 1.0, 1.0, 0.0);
         }
     }
 </script>
@@ -140,9 +140,9 @@ void main(void) {
         }
         float magnitude = length(vec2(xSlope, ySlope));
         if (magnitude > 0.6) {
-            gl_FragColor += vec4(0.0, 0.0, 0.0, 1.0);
+            gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
         } else {
-            gl_FragColor += vec4(1.0, 1.0, 1.0, 1.0);
+            gl_FragColor = vec4(1.0, 1.0, 1.0, 0.0);
         }
     }
 </script>
