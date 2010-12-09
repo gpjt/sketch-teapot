@@ -269,12 +269,12 @@ void main(void) {
 
 
     function setMatrixUniforms(program) {
-        gl.uniformMatrix4fv(program.pMatrixUniform, false, new WebGLFloatArray(pMatrix.flatten()));
-        gl.uniformMatrix4fv(program.mvMatrixUniform, false, new WebGLFloatArray(mvMatrix.flatten()));
+        gl.uniformMatrix4fv(program.pMatrixUniform, false, new Float32Array(pMatrix.flatten()));
+        gl.uniformMatrix4fv(program.mvMatrixUniform, false, new Float32Array(mvMatrix.flatten()));
 
         var normalMatrix = mvMatrix.inverse();
         normalMatrix = normalMatrix.transpose();
-        gl.uniformMatrix4fv(program.nMatrixUniform, false, new WebGLFloatArray(normalMatrix.flatten()));
+        gl.uniformMatrix4fv(program.nMatrixUniform, false, new Float32Array(normalMatrix.flatten()));
     }
 
 
@@ -285,25 +285,25 @@ void main(void) {
     function handleLoadedTeapot(teapotData) {
         teapotVertexNormalBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, teapotVertexNormalBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new WebGLFloatArray(teapotData.vertexNormals), gl.STATIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(teapotData.vertexNormals), gl.STATIC_DRAW);
         teapotVertexNormalBuffer.itemSize = 3;
         teapotVertexNormalBuffer.numItems = teapotData.vertexNormals.length / 3;
 
         teapotVertexTextureCoordBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, teapotVertexTextureCoordBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new WebGLFloatArray(teapotData.vertexTextureCoords), gl.STATIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(teapotData.vertexTextureCoords), gl.STATIC_DRAW);
         teapotVertexTextureCoordBuffer.itemSize = 2;
         teapotVertexTextureCoordBuffer.numItems = teapotData.vertexTextureCoords.length / 2;
 
         teapotVertexPositionBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, teapotVertexPositionBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new WebGLFloatArray(teapotData.vertexPositions), gl.STATIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(teapotData.vertexPositions), gl.STATIC_DRAW);
         teapotVertexPositionBuffer.itemSize = 3;
         teapotVertexPositionBuffer.numItems = teapotData.vertexPositions.length / 3;
 
         teapotVertexIndexBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, teapotVertexIndexBuffer);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new WebGLUnsignedShortArray(teapotData.indices), gl.STREAM_DRAW);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(teapotData.indices), gl.STREAM_DRAW);
         teapotVertexIndexBuffer.itemSize = 1;
         teapotVertexIndexBuffer.numItems = teapotData.indices.length;
 
@@ -335,7 +335,7 @@ void main(void) {
              1.0, -1.0,
             -1.0, -1.0,
         ];
-        gl.bufferData(gl.ARRAY_BUFFER, new WebGLFloatArray(vertices), gl.STATIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
         directTextureVertexPositionBuffer.itemSize = 2;
         directTextureVertexPositionBuffer.numItems = 4;
 
@@ -347,7 +347,7 @@ void main(void) {
             1.0,  0.0,
             0.0,  0.0,
         ];
-        gl.bufferData(gl.ARRAY_BUFFER, new WebGLFloatArray(textureCoords), gl.STATIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
         directTextureVertexTextureCoordBuffer.itemSize = 2;
         directTextureVertexTextureCoordBuffer.numItems = 4;
     }

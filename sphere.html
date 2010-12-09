@@ -8,6 +8,10 @@
 <script type="text/javascript" src="glUtils.js"></script>
 
 <script id="shader-fs" type="x-shader/x-fragment">
+  #ifdef GL_ES
+  precision highp float;
+  #endif
+
   varying vec3 vNormal;
 
   uniform vec3 uLightingDirection;
@@ -23,23 +27,23 @@
 
     gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
     if (length(lightWeighting) < 1.00) {
-        if (mod(gl_FragCoord.x + gl_FragCoord.y, 10.0) == 0) {
+        if (mod(gl_FragCoord.x + gl_FragCoord.y, 10.0) == 0.0) {
             gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
         }
     }
     if (length(lightWeighting) < 0.75) {
-        if (mod(gl_FragCoord.x - gl_FragCoord.y, 10.0) == 0) {
+        if (mod(gl_FragCoord.x - gl_FragCoord.y, 10.0) == 0.0) {
             gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
         }
     }
     if (length(lightWeighting) < 0.50) {
-        if (mod(gl_FragCoord.x + gl_FragCoord.y - 5, 10.0) == 0) {
+        if (mod(gl_FragCoord.x + gl_FragCoord.y - 5.0, 10.0) == 0.0) {
             gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
         }
     }
 
     if (length(lightWeighting) < 0.3465) {
-        if (mod(gl_FragCoord.x - gl_FragCoord.y - 5, 10.0) == 0) {
+        if (mod(gl_FragCoord.x - gl_FragCoord.y - 5.0, 10.0) == 0.0) {
             gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
         }
     }
@@ -202,12 +206,12 @@
 
 
   function setMatrixUniforms() {
-    gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, new WebGLFloatArray(pMatrix.flatten()));
-    gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, new WebGLFloatArray(mvMatrix.flatten()));
+    gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, new Float32Array(pMatrix.flatten()));
+    gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, new Float32Array(mvMatrix.flatten()));
 
     var normalMatrix = mvMatrix.inverse();
     normalMatrix = normalMatrix.transpose();
-    gl.uniformMatrix4fv(shaderProgram.nMatrixUniform, false, new WebGLFloatArray(normalMatrix.flatten()));
+    gl.uniformMatrix4fv(shaderProgram.nMatrixUniform, false, new Float32Array(normalMatrix.flatten()));
   }
 
 
@@ -303,19 +307,19 @@
 
     moonVertexNormalBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, moonVertexNormalBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new WebGLFloatArray(normalData), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normalData), gl.STATIC_DRAW);
     moonVertexNormalBuffer.itemSize = 3;
     moonVertexNormalBuffer.numItems = normalData.length / 3;
 
     moonVertexPositionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, moonVertexPositionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new WebGLFloatArray(vertexPositionData), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexPositionData), gl.STATIC_DRAW);
     moonVertexPositionBuffer.itemSize = 3;
     moonVertexPositionBuffer.numItems = vertexPositionData.length / 3;
 
     moonVertexIndexBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, moonVertexIndexBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new WebGLUnsignedShortArray(indexData), gl.STREAM_DRAW);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indexData), gl.STREAM_DRAW);
     moonVertexIndexBuffer.itemSize = 1;
     moonVertexIndexBuffer.numItems = indexData.length;
   }
