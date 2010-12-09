@@ -1,7 +1,7 @@
 <html>
 
 <head>
-<title>Sketch teapot</title>
+<title>Crosshatch teapot</title>
 <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
 
 <script type="text/javascript" src="sylvester.js"></script>
@@ -27,45 +27,45 @@
     uniform sampler2D uSampler;
 
 
-void main(void) {
-    vec3 lightWeighting;
-    vec3 lightDirection = normalize(uPointLightingLocation - vPosition.xyz);
-    vec3 normal = normalize(vTransformedNormal.xyz);
+    void main(void) {
+        vec3 lightWeighting;
+        vec3 lightDirection = normalize(uPointLightingLocation - vPosition.xyz);
+        vec3 normal = normalize(vTransformedNormal.xyz);
 
-    float specularLightWeighting = 0.0;
-    vec3 eyeDirection = normalize(-vPosition.xyz);
-    vec3 reflectionDirection = reflect(-lightDirection, normal);
+        float specularLightWeighting = 0.0;
+        vec3 eyeDirection = normalize(-vPosition.xyz);
+        vec3 reflectionDirection = reflect(-lightDirection, normal);
 
-    specularLightWeighting = pow(max(dot(reflectionDirection, eyeDirection), 0.0), uMaterialShininess);
+        specularLightWeighting = pow(max(dot(reflectionDirection, eyeDirection), 0.0), uMaterialShininess);
 
-    float diffuseLightWeighting = max(dot(normal, lightDirection), 0.0);
-    lightWeighting = uAmbientColor
-        + uPointLightingSpecularColor * specularLightWeighting
-        + uPointLightingDiffuseColor * diffuseLightWeighting;
+        float diffuseLightWeighting = max(dot(normal, lightDirection), 0.0);
+        lightWeighting = uAmbientColor
+            + uPointLightingSpecularColor * specularLightWeighting
+            + uPointLightingDiffuseColor * diffuseLightWeighting;
 
-    gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-    if (length(lightWeighting) < 1.00) {
-        if (mod(gl_FragCoord.x + gl_FragCoord.y, 10.0) == 0.0) {
-            gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+        gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+        if (length(lightWeighting) < 1.00) {
+            if (mod(gl_FragCoord.x + gl_FragCoord.y, 10.0) == 0.0) {
+                gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+            }
+        }
+        if (length(lightWeighting) < 0.75) {
+            if (mod(gl_FragCoord.x - gl_FragCoord.y, 10.0) == 0.0) {
+                gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+            }
+        }
+        if (length(lightWeighting) < 0.50) {
+            if (mod(gl_FragCoord.x + gl_FragCoord.y - 5.0, 10.0) == 0.0) {
+                gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+            }
+        }
+
+        if (length(lightWeighting) < 0.3465) {
+            if (mod(gl_FragCoord.x - gl_FragCoord.y - 5.0, 10.0) == 0.0) {
+                gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+            }
         }
     }
-    if (length(lightWeighting) < 0.75) {
-        if (mod(gl_FragCoord.x - gl_FragCoord.y, 10.0) == 0.0) {
-            gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
-        }
-    }
-    if (length(lightWeighting) < 0.50) {
-        if (mod(gl_FragCoord.x + gl_FragCoord.y - 5.0, 10.0) == 0.0) {
-            gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
-        }
-    }
-
-    if (length(lightWeighting) < 0.3465) {
-        if (mod(gl_FragCoord.x - gl_FragCoord.y - 5.0, 10.0) == 0.0) {
-            gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
-        }
-    }
-}
 </script>
 
 
