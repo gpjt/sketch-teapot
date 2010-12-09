@@ -215,48 +215,9 @@
   }
 
 
-  var mouseDown = false;
-  var lastMouseX = null;
-  var lastMouseY = null;
-
-  var moonRotationMatrix = Matrix.I(4);
-
-  function handleMouseDown(event) {
-    mouseDown = true;
-    lastMouseX = event.clientX;
-    lastMouseY = event.clientY;
-  }
-
-
-  function handleMouseUp(event) {
-    mouseDown = false;
-  }
-
-
-  function handleMouseMove(event) {
-    if (!mouseDown) {
-      return;
-    }
-    var newX = event.clientX;
-    var newY = event.clientY;
-
-    var deltaX = newX - lastMouseX
-    var newRotationMatrix = createRotationMatrix(deltaX / 10, [0, 1, 0]);
-
-    var deltaY = newY - lastMouseY;
-    newRotationMatrix = newRotationMatrix.x(createRotationMatrix(deltaY / 10, [1, 0, 0]));
-
-    moonRotationMatrix = newRotationMatrix.x(moonRotationMatrix);
-
-    lastMouseX = newX
-    lastMouseY = newY;
-  }
-
-
-
-  var moonVertexPositionBuffer;
-  var moonVertexNormalBuffer;
-  var moonVertexIndexBuffer;
+  var sphereVertexPositionBuffer;
+  var sphereVertexNormalBuffer;
+  var sphereVertexIndexBuffer;
   function initBuffers() {
     var latitudeBands = 30;
     var longitudeBands = 30;
@@ -305,23 +266,23 @@
       }
     }
 
-    moonVertexNormalBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, moonVertexNormalBuffer);
+    sphereVertexNormalBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, sphereVertexNormalBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normalData), gl.STATIC_DRAW);
-    moonVertexNormalBuffer.itemSize = 3;
-    moonVertexNormalBuffer.numItems = normalData.length / 3;
+    sphereVertexNormalBuffer.itemSize = 3;
+    sphereVertexNormalBuffer.numItems = normalData.length / 3;
 
-    moonVertexPositionBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, moonVertexPositionBuffer);
+    sphereVertexPositionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, sphereVertexPositionBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexPositionData), gl.STATIC_DRAW);
-    moonVertexPositionBuffer.itemSize = 3;
-    moonVertexPositionBuffer.numItems = vertexPositionData.length / 3;
+    sphereVertexPositionBuffer.itemSize = 3;
+    sphereVertexPositionBuffer.numItems = vertexPositionData.length / 3;
 
-    moonVertexIndexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, moonVertexIndexBuffer);
+    sphereVertexIndexBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, sphereVertexIndexBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indexData), gl.STREAM_DRAW);
-    moonVertexIndexBuffer.itemSize = 1;
-    moonVertexIndexBuffer.numItems = indexData.length;
+    sphereVertexIndexBuffer.itemSize = 1;
+    sphereVertexIndexBuffer.numItems = indexData.length;
   }
 
 
@@ -361,17 +322,15 @@
 
     mvTranslate([0, 0, -6]);
 
-    multMatrix(moonRotationMatrix);
+    gl.bindBuffer(gl.ARRAY_BUFFER, sphereVertexPositionBuffer);
+    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, sphereVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, moonVertexPositionBuffer);
-    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, moonVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, sphereVertexNormalBuffer);
+    gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute, sphereVertexNormalBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, moonVertexNormalBuffer);
-    gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute, moonVertexNormalBuffer.itemSize, gl.FLOAT, false, 0, 0);
-
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, moonVertexIndexBuffer);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, sphereVertexIndexBuffer);
     setMatrixUniforms();
-    gl.drawElements(gl.TRIANGLES, moonVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+    gl.drawElements(gl.TRIANGLES, sphereVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
   }
 
 
@@ -393,10 +352,6 @@
     gl.enable(gl.DEPTH_TEST);
     gl.depthFunc(gl.LEQUAL);
 
-    canvas.onmousedown = handleMouseDown;
-    document.onmouseup = handleMouseUp;
-    document.onmousemove = handleMouseMove;
-
     setInterval(tick, 15);
   }
 
@@ -413,8 +368,6 @@
   <canvas id="webgl-canvas" style="border: none;" width="500" height="500"></canvas>
 
   <br/>
-<input type="checkbox" id="lighting" checked /> Use lighting<br/>
-Spin the moon by dragging it with the mouse.
 
 <br/>
 <h2>Directional light:</h2>
