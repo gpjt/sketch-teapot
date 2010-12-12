@@ -6,6 +6,7 @@
 
 <script type="text/javascript" src="sylvester.js"></script>
 <script type="text/javascript" src="glUtils.js"></script>
+<script type="text/javascript" src="webgl.debug.js"></script>
 
 
 <script id="normals-fs" type="x-shader/x-fragment">
@@ -115,11 +116,12 @@
     function initGL(canvas) {
         try {
             gl = canvas.getContext("experimental-webgl");
+            gl = WebGLDebugUtils.makeDebugContext(gl);
             gl.viewportWidth = canvas.width;
             gl.viewportHeight = canvas.height;
         } catch(e) {
         }
-            if (!gl) {
+        if (!gl) {
             alert("Could not initialise WebGL, sorry :-(");
         }
     }
