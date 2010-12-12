@@ -421,27 +421,31 @@
         gl.drawElements(gl.TRIANGLES, teapotVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        var program;
         if (document.getElementById("id_render_type").value == "normals") {
             // The viewer wants to see the normals as a colour map, so just blat the texture onto the canvas.
-            gl.useProgram(directTextureProgram);
+
+            program = directTextureProgram;
         } else {
             // The viewer wants to see the edges, so use the a program that does nothing in the vertex shader
             // and runs a sobel-filter program in the fragment shader
 
-            gl.useProgram(sobelProgram);
+            program = sobelProgram;
         }
+        gl.useProgram(program);
+
         gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, normalsFramebuffer.texture);
-        gl.uniform1i(sobelProgram.samplerUniform, 0);
+        gl.uniform1i(program.samplerUniform, 0);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, directTextureVertexPositionBuffer);
-        gl.vertexAttribPointer(sobelProgram.vertexPositionAttribute, directTextureVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+        gl.vertexAttribPointer(program.vertexPositionAttribute, directTextureVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, directTextureVertexTextureCoordBuffer);
-        gl.vertexAttribPointer(sobelProgram.textureCoordAttribute, directTextureVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
+        gl.vertexAttribPointer(program.textureCoordAttribute, directTextureVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
-        setMatrixUniforms(sobelProgram);
+        setMatrixUniforms(program);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, directTextureVertexPositionBuffer.numItems);
 
     }
