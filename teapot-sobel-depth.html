@@ -18,7 +18,6 @@
     void main(void) {
         float depth = vDepth / 100.0;
 
-
         gl_FragColor = vec4(depth, mod(depth * 256.0, 1.0), mod(depth * 65536.0, 1.0), mod(depth * 16777216.0, 1.0));
     }
 </script>
@@ -314,7 +313,6 @@
 
     var directTextureVertexPositionBuffer;
     var directTextureVertexTextureCoordBuffer;
-    var directTextureNormalsBuffer;
     function initBuffers() {
         directTextureVertexPositionBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, directTextureVertexPositionBuffer);
